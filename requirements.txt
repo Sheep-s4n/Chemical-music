@@ -1,0 +1,11 @@
+numpy==2.2.1
+scipy==1.14.1
+matplotlib==3.10.7
+pygame==2.6.1
+pyserial==3.5
+MIDIUtil==1.2.1
+sounddevice==0.5.5
+soundfile==0.13.1
+pyo==1.0.5
+customtkinter==0.3
+ttkbootstrap==1.19.2
