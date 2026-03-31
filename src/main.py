@@ -1,4 +1,3 @@
-
 import serial, time, pygame, sys, json
 from pathlib import Path
 import random

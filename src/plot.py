@@ -7,6 +7,8 @@ from utils.simul_arduino import RealDataSimulator
 import sounddevice as sd
 import soundfile as sf
 import numpy as np
+import os 
+import json 
 
 # récolte de donner : auto
 # adapter au l'arduino
@@ -28,7 +30,40 @@ BAUDRATE = 9600
 
 ser = serial.Serial(PORT, BAUDRATE, timeout=1)
 
+def init_experiment(directory="./experimental_data"):
+    """
+    Creates a new experiment file with the next index.
+    Returns the file path.
+    """
+    os.makedirs(directory, exist_ok=True)
 
+    # Find existing experiment indices
+    indices = []
+    for fname in os.listdir(directory):
+        if fname.startswith("experiment_") and fname.endswith(".jsonl"):
+            try:
+                idx = int(fname.split("_")[1].split(".")[0])
+                indices.append(idx)
+            except (ValueError, IndexError):
+                pass
+
+    n = max(indices) + 1 if indices else 0
+    file_path = os.path.join(directory, f"experiment_{n}.jsonl")
+
+    # Create empty file
+    open(file_path, "w").close()
+
+    return file_path
+
+
+def append_data(file_path, value, timestamp):
+    """
+    Append a JSON record: {"value": ..., "time": ...}
+    """
+    record = {"value": value, "time": timestamp}
+    with open(file_path, "a") as f:
+        json.dump(record, f)
+        f.write("\n")
 
 threshold = 400
 count_required = 5  # number of consecutive values to confirm transition
@@ -53,6 +88,8 @@ X_MAX = 700   # maximum value of the sensor we trust
 MASTER_GAIN = 1.4
 
 background_audio, sr = sf.read("../assets/music/ambient/soundscape_space_music_short.wav")
+
+data_file = init_experiment()
 
 if background_audio.ndim > 1:
     background_audio = background_audio.mean(axis=1)  # convert to mono
@@ -99,7 +136,6 @@ def smooth(value):
 # --- Sensor reading thread ---
 def sensor_thread(): 
     while True :
-        print(x)
         smoothed = smooth(x)
         data_buffer.append(smoothed)
         time.sleep(0.01)
@@ -195,6 +231,7 @@ stream.start()
 
 # --- Main loop ---
 while True:
+
     
     try:
         line = ser.readline().decode('utf-8').strip()  # Read a line from serial
@@ -206,7 +243,10 @@ while True:
         continue
     #value = int(ser.readline().decode("utf-8").strip()) #python Lit le port série jusqu’au caractère \n (qui définit la fin d'un bit)
     #value = int(sensor.read())
-
+    print(value)
+    
+    append_data(data_file, value, timestamp=time.time())
+    
     # Check for values above threshold
     if value > threshold:
         above_count += 1
