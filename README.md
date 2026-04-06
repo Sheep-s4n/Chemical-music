@@ -1,18 +1,16 @@
 ## Overview
 
+
+
+https://github.com/user-attachments/assets/7c9f23ff-6d8b-49c5-987c-4352c482ddcf
+
+_The first test of Chemical Music (sound removed for copyright reasons) shows the projected diagram adapting to the reaction’s color cycles, illustrating its oscillations._
+
+
 This project explores the intersection of chemistry and art through an immersive experience. The **Briggs-Rauscher reaction** was chosen for its striking color changes, which can be monitored using a photoresistor.  
 
 The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. This data reflects the current color of the reaction and is processed in Python to generate **music**. Additionally, a **chemical clock** is implemented, as the color changes occur periodically.  
 
-Example of the Briggs-Rauscher reaction:  
-
-https://github.com/user-attachments/assets/d78ce497-1482-41fd-b8a9-8b21e28738da
-
-
-<video  width="640"  height="360"  controls>  
-<source  src="https://USERNAME.github.io/REPO/assets/video/reaction_demo.mp4"  type="video/mp4">  
-Your browser does not support the video tag.  
-</video>
 
 ## Hardware Setup
 
@@ -21,6 +19,29 @@ The project relies on external hardware to gather real-time data:
 - **Microcontroller:** Gelegoo Mega2560 R3 (Arduino-compatible)  
 - **Sensors & Components:** Photoresistor, breadboard, male-to-male jumper wires  
 - **LED Strips:** WS2812B addressable LEDs (currently under development)  
+
+
+The setup captures the dynamic color changes of the chemical reaction using light sensing:
+
+<img width="500" height="375" alt="assembly_diagram_low_quality" src="https://github.com/user-attachments/assets/3ae6e8a6-17fa-4e8e-bff8-8710f63bf662" />
+<img width="500" height="375" alt="assembly_diagram_low_quality" src="https://github.com/user-attachments/assets/435f0629-7192-446f-a931-8ed98bbe21b3" />
+
+
+
+1. **Light source:** Illuminates the chemical mixture uniformly.
+
+2. **Reaction mixture:** Color-changing reaction (e.g., Briggs–Rauscher) in a transparent container.
+
+3. **Microcontroller:** Voltage from the photoresistor is read by the Gelegoo Mega2560 R3 (Arduino-compatible).
+
+4. **Photoresistor:** Positioned behind the mixture; its resistance varies with transmitted light.
+
+<img width="461" height="348" alt="photoresistor_wiring_diagram" src="https://github.com/user-attachments/assets/c4dad04c-2a9e-4077-aecb-a2140f78e7a1" />
+
+_Photoresistor wiring diagram_
+
+5. **Computer:** Receives real-time data via USB.
+
 
 ## Work in Progress
 
