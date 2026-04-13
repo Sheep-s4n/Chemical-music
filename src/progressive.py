@@ -10,6 +10,8 @@ import numpy as np
 from statistics import mean
 from visuals.clock_ui import ChemicalClockUI
 import pygame
+from pathlib import Path
+
 
 """
 bug quand on pause le program : en bougeant la fenêtre ! (décalle le temps)
