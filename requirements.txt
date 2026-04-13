@@ -9,3 +9,4 @@ soundfile==0.13.1
 pyo==1.0.5
 customtkinter==0.3
 ttkbootstrap==1.19.2
+pyserial==3.5
