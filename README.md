@@ -50,5 +50,17 @@ _Photoresistor wiring diagram_
 
 > **Note:** Music files have been temporarily removed due to copyright restrictions. Royalty-free music will be added in the future.  
 
+> **Voice Recognition & Voice-Control Model**
+>
+> The AI model required for voice recognition and voice-based LED control is **not included by default** in this project.
+>
+> It must be downloaded manually from the official Vosk model repository:
+>
+> https://alphacephei.com/vosk/models
+>
+> Model used in this project:
+> - `vosk-model-small-fr-0.22` (French)
+>
+> After downloading, place the model in the appropriate project directory and configure the path in your application before running voice recognition features.
 
 

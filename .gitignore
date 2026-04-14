@@ -2,3 +2,4 @@ assets/music/
 src/game/
 src/experimental_data/experiment_*.jsonl
 **/__pycache__/
+models/**
