@@ -11,7 +11,7 @@ from LED_animations.fade import *
 arduino = serial.Serial('COM5', 115200)
 time.sleep(2)
 
-NUM_LEDS = 100
+NUM_LEDS = 300
 START_MARKER = 0xFF
 
 def send_frame(colors):
@@ -20,10 +20,21 @@ def send_frame(colors):
     frame = [START_MARKER]
     print(colors)
     for r, g, b, brightness in colors:
-        frame.extend([min(r, 254), min(g, 254), min(b, 254), min(brightness, 254)])
+        frame.extend([min(r, 254), min(b, 254), min(g, 254), min(brightness, 254)]) #inverted g and b because leds work in GRB order
     arduino.write(bytes(frame))
 
+#data = [(255,255,255,100) for _ in range(NUM_LEDS)] 
+#send_frame(data)
+#data = [(0,0,0,0) for _ in range(NUM_LEDS)] 
+#data = [(255,255,255,255) for _ in range(NUM_LEDS)] 
+#send_frame(data)
 
+
+##for frame in white_wipe(NUM_LEDS):
+##    send_frame(frame)
+##    time.sleep(0.04)
+
+""" 
 dt = 0.05
 next_time = time.time()
         
@@ -40,3 +51,4 @@ time.sleep(2)
 for frame in fade_out(NUM_LEDS, 10):
     send_frame(frame)
     time.sleep(0.02)
+"""

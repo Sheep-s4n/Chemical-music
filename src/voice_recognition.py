@@ -10,25 +10,15 @@ from vosk import Model, KaldiRecognizer
 
 import serial
 import time
-from LED_animations.wipe import *
-from LED_animations.fade import *
 
 
-arduino = serial.Serial('COM5', 115200)
+from utils.light_sound import LightSoundController
+
+leds = LightSoundController("COM5")
 time.sleep(2)
 
-NUM_LEDS = 100
-START_MARKER = 0xFF
-state =  "WAIT_BONJOUR"
 
-def send_frame(colors):
-    # colors is a list of (r, g, b, brightness) tuples
-    # Clamp all values to 0-254 to avoid colliding with the 0xFF start marker
-    frame = [START_MARKER]
-    print(colors)
-    for r, g, b, brightness in colors:
-        frame.extend([min(r, 254), min(g, 254), min(b, 254), min(brightness, 254)])
-    arduino.write(bytes(frame))
+state =  "WAIT_BONJOUR"
 
 
 
@@ -53,13 +43,9 @@ with sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16',
             value = partial.get("partial")
             if state == "WAIT_BONJOUR":
                 if "bonjour" in value :
-                    for frame in white_wipe(NUM_LEDS):
-                        send_frame(frame)
-                        time.sleep(0.02)
+                    leds.light_up()
                     state = "WAIT_AU_REVOIR"
             elif state == "WAIT_AU_REVOIR":
                 if "au revoir" in value :
-                    for frame in fade_out(NUM_LEDS, 10):
-                        send_frame(frame)
-                        time.sleep(0.02)
+                    leds.fade_out()
                     state = "WAIT_BONJOUR"

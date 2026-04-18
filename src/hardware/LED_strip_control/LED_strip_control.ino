@@ -1,0 +1,200 @@
+#include <FastLED.h>
+
+#define LED_PIN 6
+#define NUM_LEDS 300
+#define START_MARKER 0xFF  // header byte
+CRGB leds[NUM_LEDS];
+
+
+uint8_t type;
+uint8_t len;
+uint8_t idx; // This is a counter used while reading payload bytes.
+uint8_t payload[10]; // Temporary storage for parameters.
+
+int state = 0; // It defines which part of the message we are currently reading.
+
+void waveFromPoint(int origin) {
+
+  float radius = 0;
+
+  while (radius < NUM_LEDS) {
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+
+      float dist = abs(i - origin);
+      float intensity = 1.0 - (dist / radius);
+
+      if (intensity < 0) intensity = 0;
+
+      uint8_t brightness = intensity * 255;
+
+      leds[i] = CHSV(0, 0, brightness);    
+    }
+
+    FastLED.show();
+
+    radius += 5;     // speed of propagation
+    delay(20);       // frame rate (20ms = ~50 FPS)
+  }
+}
+
+void fadeOutFromCurrent(int frameDelay = 10) {
+
+  // 1. snapshot original brightness
+  uint8_t original[NUM_LEDS];
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    original[i] = leds[i].getAverageLight();
+  }
+
+  float factor = 1.0;
+
+  // 2. exponential decay over time
+  while (factor > 0.01) {
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+
+      uint8_t v = original[i] * factor;
+      leds[i] = CHSV(0, 0, v);
+    }
+
+    FastLED.show();
+
+    factor -= 0.07;   // linear decay curve
+    delay(frameDelay);
+  }
+
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  FastLED.show();
+}
+
+
+void breathingAnimation(uint32_t durationMs) {
+
+  uint32_t startTime = millis();
+
+  // -------------------------
+  // snapshot current LED state
+  // -------------------------
+  CRGB original[NUM_LEDS];
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    original[i] = leds[i];
+  }
+
+  uint8_t startBrightness = FastLED.getBrightness();
+
+  // -------------------------
+  // BREATHING PHASE
+  // -------------------------
+  while (millis() - startTime < durationMs) {
+
+    uint8_t b = beatsin8(20, 100, 255);
+
+    FastLED.setBrightness(b);
+    FastLED.show();
+
+    delay(10);
+  }
+
+  // -------------------------
+  // SMOOTH RESTORE PHASE
+  // -------------------------
+
+  uint8_t current = FastLED.getBrightness();
+
+  while (current != startBrightness) {
+
+    if (current > startBrightness) current--;
+    else current++;
+
+    FastLED.setBrightness(current);
+
+    // restore original LED colors
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = original[i];
+    }
+
+    FastLED.show();
+    delay(10);
+  }
+
+  FastLED.setBrightness(startBrightness);
+}
+
+void execute(uint8_t type, uint8_t* data, uint8_t len) {
+
+    switch (type) {
+
+    case 0:
+        waveFromPoint(150);
+        break;
+
+    case 1:
+        //colorTransition(data[0], data[1], data[2]);
+        break;
+
+    case 2:
+        //brightnessSpike(); // no params
+        //fadeOutFromCurrent(); 
+        break;
+    case 3:
+        fadeOutFromCurrent();  
+        break;
+
+    case 4:
+        uint32_t durationMs =
+        ((uint32_t)data[0] << 16) |
+        ((uint32_t)data[1] << 8)  |
+        (uint32_t)data[2];
+
+        breathingAnimation(durationMs);
+        break;
+
+    }
+}
+
+void setup() {
+  Serial.begin(115200);
+  FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, NUM_LEDS);
+  FastLED.clear();  // to ensure all leds aren't lit before letting the python code handle the leds
+  FastLED.show();
+}
+
+
+void loop() {
+    while (Serial.available()) {
+        uint8_t b = Serial.read(); // reads one byte the next one will be read in the next loop iteration, this way we can process the message byte by byte without blocking until the whole message is received
+        Serial.println(b, HEX);
+        switch (state) {
+
+        case 0: // waiting for start
+            if (b == START_MARKER) state = 1;
+            break;
+
+        case 1: // type
+            type = b;
+            state = 2;
+            break;
+
+        case 2: // length
+            len = b;
+            idx = 0;
+            if (len > 0) {
+                state = 3;
+            } else {
+                execute(type, payload, len); // we have all the data (no payload) so we can execute the command immediately
+                state = 0;
+            }
+            break;
+
+        case 3: // payload
+            payload[idx++] = b;
+            if (idx >= len) {
+                execute(type, payload, len); // we have all the data so we can execute the command
+                state = 0;
+            }
+            break;
+        }
+    }
+}
