@@ -4,7 +4,7 @@ import serial
 START_MARKER = 0xFF
 
 TYPE_LIGHT_UP = 0
-TYPE_COLOR_TRANSITION = 1
+TYPE_BRIGGS_RAUSCHER = 1
 TYPE_BRIGHTNESS_SPIKE = 2
 TYPE_FADE_OUT = 3
 TYPE_BREATHING = 4
@@ -31,8 +31,14 @@ class LEDController:
     def light_up(self):
         self._send_packet(TYPE_LIGHT_UP)
 
-    def transition_to(self, r, g, b):
-        self._send_packet(TYPE_COLOR_TRANSITION, [r, g, b])
+    def briggs_rauscher(self, p):
+        """
+        p : float from 0.0 to 1.0
+        converted into one byte (0-255)
+        """
+        p_byte = max(0, min(255, int(p * 255)))
+        self._send_packet(TYPE_BRIGGS_RAUSCHER, [p_byte])
+    
 
     def brightness_spike(self):
         self._send_packet(TYPE_BRIGHTNESS_SPIKE)

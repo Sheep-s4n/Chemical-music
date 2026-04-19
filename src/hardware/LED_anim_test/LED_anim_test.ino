@@ -19,58 +19,70 @@ void setup() {
     FastLED.show();
 }
 
+
 void briggsRauscher(float p) {
 
     static float prevP = 0;
-    static uint8_t fadeT = 0;
-    static bool fading = false;
 
-    // ---------- YELLOW PHASE ----------
-    if (p < THRESHOLD) {
+    bool wasBlue = (prevP >= THRESHOLD);
+    bool isBlue  = (p >= THRESHOLD);
 
-        wasBlue = false;
+    uint8_t oldSat = (uint8_t)(prevP * (255.0 / THRESHOLD));
+    uint8_t newSat = (uint8_t)(p     * (255.0 / THRESHOLD));
 
-        uint8_t sat = (uint8_t)(p * (255.0 / THRESHOLD));
-        uint8_t hue = 56;
+    // ------------------------------------
+    // yellow family animation
+    // ------------------------------------
+    if (!wasBlue && !isBlue) {
 
-        for (int i = 0; i < NUM_LEDS; i++) {
-            leds[i] = CHSV(hue, sat, 175);
+
+        int step = (newSat > oldSat) ? 1 : -1;
+
+        for (int i = oldSat; i != newSat; i += step) {
+            fill_solid(leds, NUM_LEDS, CHSV(56, i, 175));
+            FastLED.show();
+            delay(20);
         }
 
-        fading = false;
+        fill_solid(leds, NUM_LEDS, CHSV(56, newSat, 175));
+        FastLED.show();
     }
 
-    // ---------- BLUE PHASE ----------
-    else {
+    // ------------------------------------
+    // yellow -> blue transition
+    // ------------------------------------
+    else if (!wasBlue && isBlue) {
 
-        uint8_t blueHue = 160;
-
-        // first entry into blue → start fade
-        if (!wasBlue && prevP < THRESHOLD) {
-            fading = true;
-            fadeT = 0;
-            wasBlue = true;
+        for (int i = 175; i >= 0; i-= 10) {
+            fill_solid(leds, NUM_LEDS, CHSV(56, oldSat, i));
+            FastLED.show();
         }
-
-        if (fading) {
-
-            CRGB startColor = CHSV(56, 255, 175);
-            CRGB endColor   = CHSV(blueHue, 255, 175);
-
-            for (int i = 0; i < NUM_LEDS; i++) {
-                leds[i] = blend(startColor, endColor, fadeT);
-            }
-
-            fadeT += 5;
-
-            if (fadeT >= 255) {
-                fading = false;
-            }
+        for (int i = 0; i <= 175; i+= 10) {
+            fill_solid(leds, NUM_LEDS, CHSV(165, 255, i));
+            FastLED.show();
         }
-        else {
-            for (int i = 0; i < NUM_LEDS; i++) {
-                leds[i] = CHSV(blueHue, 255, 175);
-            }
+        // transition animation
+
+    }
+
+    // ------------------------------------
+    // stable blue
+    // ------------------------------------
+    else if (wasBlue && isBlue) {
+
+        // solid blue : 今分かりません、まだ考えています。 :D
+
+    }
+
+    // ------------------------------------
+    // blue -> yellow transition
+    // ------------------------------------
+    else if (wasBlue && !isBlue) {
+
+        // transition animation
+        for (int i = 255; i >= 0; i-= 5) {
+            fill_solid(leds, NUM_LEDS, CHSV(165, i , 175));
+            FastLED.show();
         }
     }
 
@@ -80,11 +92,11 @@ void briggsRauscher(float p) {
 void loop() {
 
     // simple smooth oscillation for testing
-    globalP += 0.05;
+    globalP += 0.2;
     if (globalP > 1) globalP = 0;
 
     briggsRauscher(globalP);
 
     FastLED.show();
-    delay(500);
+    delay(250);
 }

@@ -13,6 +13,81 @@ uint8_t payload[10]; // Temporary storage for parameters.
 
 int state = 0; // It defines which part of the message we are currently reading.
 
+
+void briggsRauscher(float p) {
+
+    const float THRESHOLD = 0.6;
+
+    static bool wasBlue = false;
+    static float prevP = 0;
+
+    bool isBlue  = (p >= THRESHOLD);
+
+    uint8_t oldSat = (uint8_t)(prevP * (255.0 / THRESHOLD));
+    uint8_t newSat = (uint8_t)(p     * (255.0 / THRESHOLD));
+
+    // ------------------------------------
+    // yellow family animation
+    // ------------------------------------
+    if (!wasBlue && !isBlue) {
+
+
+        int step = (newSat > oldSat) ? 1 : -1;
+
+        for (int i = oldSat; i != newSat; i += step) {
+            fill_solid(leds, NUM_LEDS, CHSV(56, i, 175));
+            FastLED.show();
+            delay(20);
+        }
+
+        fill_solid(leds, NUM_LEDS, CHSV(56, newSat, 175));
+        FastLED.show();
+    }
+
+    // ------------------------------------
+    // yellow -> blue transition
+    // ------------------------------------
+    else if (!wasBlue && isBlue) {
+
+        for (int i = 175; i >= 0; i-= 10) {
+            fill_solid(leds, NUM_LEDS, CHSV(56, oldSat, i));
+            FastLED.show();
+        }
+        for (int i = 0; i <= 175; i+= 10) {
+            fill_solid(leds, NUM_LEDS, CHSV(165, 255, i));
+            FastLED.show();
+        }
+        // transition animation
+
+    }
+
+    // ------------------------------------
+    // stable blue
+    // ------------------------------------
+    else if (wasBlue && isBlue) {
+
+        // solid blue : 今分かりません、まだ考えています。 :D
+
+    }
+
+    // ------------------------------------
+    // blue -> yellow transition
+    // ------------------------------------
+    else if (wasBlue && !isBlue) {
+
+        // transition animation
+        for (int i = 255; i >= 0; i-= 5) {
+            fill_solid(leds, NUM_LEDS, CHSV(165, i , 175));
+            FastLED.show();
+        }
+    }
+
+    prevP = p;
+    wasBlue = isBlue;
+
+}
+
+
 void waveFromPoint(int origin) {
 
   float radius = 0;
@@ -131,12 +206,12 @@ void execute(uint8_t type, uint8_t* data, uint8_t len) {
         break;
 
     case 1:
-        //colorTransition(data[0], data[1], data[2]);
+        float p = data[0] / 255.0f;
+        briggsRauscher(p);
         break;
 
     case 2:
         //brightnessSpike(); // no params
-        //fadeOutFromCurrent(); 
         break;
     case 3:
         fadeOutFromCurrent();  

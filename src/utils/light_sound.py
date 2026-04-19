@@ -128,7 +128,9 @@ class LightSoundController:
     def self_introduction(self):
         self.leds.breathing(14000)
         self._play("ai_presentation")
-        
+    
+    def briggs_rauscher(self, p):
+        self.leds.briggs_rauscher(p)
     
     def _music_loop(self):
 
