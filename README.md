@@ -46,7 +46,6 @@ _Photoresistor wiring diagram_
 ## Work in Progress
 
 - Responsive LED strip control synchronized with chemical music  
-- JSON-based file structure for music implementation, enabling easier mapping of musical events to reaction color changes  
 
 > **Note:** Music files have been temporarily removed due to copyright restrictions. Royalty-free music will be added in the future.  
 
