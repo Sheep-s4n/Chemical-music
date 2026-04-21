@@ -25,7 +25,7 @@ for port in serial_port:
     print(f"{port.name} // {port.device} // D={port.description}")
 
 
-PORT = "COM5"        # Windows : "COM3" / Linux : "/dev/ttyACM0"
+PORT = "COM4"        # Windows : "COM3" / Linux : "/dev/ttyACM0"
 BAUDRATE = 9600
 
 ser = serial.Serial(PORT, BAUDRATE, timeout=1)
@@ -82,7 +82,7 @@ x = 0  # declare once globally
 BUFFER_SIZE = 2000
 SMOOTH_SIZE =  30
 
-X_MIN = 100   # minimum value of the sensor we trust
+X_MIN = 0   # minimum value of the sensor we trust
 X_MAX = 700   # maximum value of the sensor we trust
 
 MASTER_GAIN = 1.4

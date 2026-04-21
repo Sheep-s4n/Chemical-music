@@ -18,7 +18,7 @@ void loop() {
 
   Serial.println(value);
   
-  int lecture = digitalRead(31);  // Lire l'état du bouton / renvoie entre 1 et 0
+  //int lecture = digitalRead(31);  // Lire l'état du bouton / renvoie entre 1 et 0
 
   // Détection de front montant (appui unique)
   //if (lecture == HIGH && etatBouton == LOW) {

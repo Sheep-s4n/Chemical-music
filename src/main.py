@@ -29,12 +29,7 @@ from utils.simul_arduino import RealDataSimulator
 
 # features to create : 
 # - il faut pouvoir mettre en pause le programme ou la clock d'une manière ou d'une autre
-# - team scores 
-# - function to increase players scores 
 # - logs 
-# - retriev frome the logs : for a leaderboard [team and machines] (with different colors) and an only team leaderboard 
-# - reaction time guess percentage of error 
-# - player time guess percentage of error
 
 # - real time concentration graph
 

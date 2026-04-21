@@ -76,7 +76,7 @@ class ChemicalClockUI:
         font_large = pygame.font.SysFont("Arial", 50, bold=True)
         
         if len(periods) > 0:
-            avg_text = f"Moyenne: {average:.3f} s"
+            avg_text = "Moyenne: --" if average is None else f"Moyenne: {average:.3f} s"
         else:
             avg_text = "Collecte des données..."
         

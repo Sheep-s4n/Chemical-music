@@ -58,23 +58,24 @@ class LightSoundController:
             fade_ms = 50
             silence_ms = 100
 
-            fade_samples = int(fs * fade_ms / 1000)
-            silence_samples = int(fs * silence_ms / 1000)
+            fade_samples = int(fs * fade_ms / 1000) # number of samples for the fade-out duration
+            silence_samples = int(fs * silence_ms / 1000)  # converts time → number of samples (because audio works in samples at a fixed sample rate)
 
             # apply fade-out
             if len(data) > fade_samples:
-                fade_curve = np.linspace(1.0, 0.0, fade_samples)
+                fade_curve = np.linspace(1.0, 0.0, fade_samples) # This creates a gradual sequence.
 
-                if data.ndim == 1:
-                    data[-fade_samples:] *= fade_curve
-                else:
+                if data.ndim == 1: #mono
+                    # with numpy data[:] you are not “creating a new array”.You are creating a: view onto the same memory
+                    data[-fade_samples:] *= fade_curve # data[-fade_samples:] selects the last fade_samples of the audio data, and *= applies the fade curve to those samples, creating a smooth fade-out effect.
+                else: #stereo or more channels, apply the same fade curve to all channels
                     data[-fade_samples:] *= fade_curve[:, None]
 
             # append silence
             if data.ndim == 1:
                 silence = np.zeros(silence_samples)
             else:
-                silence = np.zeros((silence_samples, data.shape[1]))
+                silence = np.zeros((silence_samples, data.shape[1])) #data.shape[1] = 2
 
             data = np.concatenate([data, silence])
 
@@ -132,22 +133,25 @@ class LightSoundController:
     def briggs_rauscher(self, p):
         self.leds.briggs_rauscher(p)
     
+    # only for background music
     def _music_loop(self):
 
-        position = 0
-        total = len(self.music_data)
+        position = 0 # were we are in the audio
+        total = len(self.music_data) # last position
 
-        def callback(outdata, frames, time_info, status):
-
-            nonlocal position
+        def callback(outdata, frames, time_info, status): # called by OutputStream, the system calls it for the next audio chunk it needs
+            # outdata --> the buffer provided by the audio system to fill with the next chunk of audio samples to play
+            # frames --> the number of audio samples the system wants for this chunk (e.g., 1024 samples)
+            
+            nonlocal position # use the variable from the closest enclosing function where the variable already exists (so here it's the var in _music_loop, not a new local var in callback)
 
             if not self.music_running:
-                outdata[:] = np.zeros((frames, 2))
+                outdata[:] = np.zeros((frames, 2)) # fill output buffer with silence if we decide to mute the background music
                 return
 
-            end = position + frames
+            end = position + frames # next chunk size
 
-            # wrap-around loop
+            # wrap-around loop if we get to the end of the audio data (so we can loop the music seamlessly)
             if end > total:
                 part1 = self.music_data[position:total]
                 part2 = self.music_data[0:end - total]
@@ -159,21 +163,31 @@ class LightSoundController:
 
             # stereo safety
             if chunk.ndim == 1:
-                chunk = np.column_stack([chunk, chunk])
+                chunk = np.column_stack([chunk, chunk]) # converts mono to stereo by duplicating the mono channel into both left and right channels
 
-            outdata[:] = chunk * self.music_volume
+            outdata[:] = chunk * self.music_volume #reduce amplitude for ambient music
+            # outdata is a numpy array [:] is used to select the entire array
+            # its a shared buffer owned by the audio engine.
+            
+            # with outdata = chunk
+            # Python now points outdata to chunk
+            # BUT the sound system still points to the original buffer
+            # just like in C “changing the pointer name doesn’t do anything”
 
         with sd.OutputStream(
-            samplerate=self.music_fs,
+            samplerate=self.music_fs, # fs 
             channels=2,
             callback=callback,
         ):
             while self.music_running:
                 time.sleep(0.1)
+                # Inside OutputStream: audio runs in a separate real-time thread (C-level thread) callback is called independently
+                # So: callback does NOT keep your Python thread alive
+                # therefore this loop is keeping it alive
+        
     
     def start_music(self):
-        if self.music_running:
-            return
+        if self.music_running: return # Avoid duplicate threads.
 
         self.music_running = True
         self.music_thread = threading.Thread(target=self._music_loop, daemon=True)

@@ -1,0 +1,34 @@
+{
+    "content_list": [
+      {
+        "file": "../assets/music/progressive/follow_waves/other.mp3",
+        "volume": 0.5,
+        "mode": "sustain",
+        "cycle": 0
+      },
+      {
+        "file": "../assets/music/progressive/follow_waves/isolated/piano.wav",
+        "volume": 0.7,
+        "mode": "toggle",
+        "cycle": 1
+      },
+      {
+        "file": "../assets/music/progressive/follow_waves/isolated/drums_1.wav",
+        "volume": 0.7,
+        "mode": "add_once",
+        "cycle": 2
+      },
+      {
+        "file": "../assets/music/progressive/follow_waves/isolated/vocals_1.wav",
+        "volume": 0.7,
+        "mode": "add_once",
+        "cycle": 3
+      },
+      {
+        "file": "../assets/music/progressive/follow_waves/isolated/bass_1.wav",
+        "volume": 0.7,
+        "mode": "add_once",
+        "cycle": 5
+      }
+    ]
+  }
