@@ -14,14 +14,15 @@ class LightSoundController:
     # -------------------------
     AUDIO_FILES = {
         "ai_1": "../assets/sfx/AI_voice/AI_1_v2.mp3",
+        "ai_obey": "../assets/sfx/AI_voice/AI_obey.mp3",
         "ai_2_fr": "../assets/sfx/AI_voice/AI_2_fr.mp3",
         "ai_3_fr": "../assets/sfx/AI_voice/AI_3_fr.mp3",
         "power_on": "../assets/sfx/LED/PowerOn_sfx.wav",
         "power_off": "../assets/sfx/LED/Poweroff_sfx.mp3",
-        "ai_presentation" : "../assets/sfx/AI_voice/AI_presentation.wav"
+        "ai_presentation" : "../assets/sfx/AI_voice/AI_presentation.wav",
+        "ai_start_loading" : "../assets/sfx/AI_voice/AI_start_loading.mp3",
     }
     
-    MUSIC_FILE = "../assets/music/ambient/sci-fi_ambient.mp3"
 
 
     # -------------------------
@@ -44,8 +45,10 @@ class LightSoundController:
         self.music_volume = 0.25 # (ranging from 0 to 1) lower because it's ambient music, not the main focus
         self.music_thread = None
         self.music_running = False
+        self.music_file = "../assets/music/ambient/sci-fi_ambient.mp3"
+
         
-        self.music_data, self.music_fs = sf.read(self.MUSIC_FILE)
+        self.music_data, self.music_fs = sf.read(self.music_file)
 
     # -------------------------
     # PRELOAD SYSTEM
@@ -133,6 +136,42 @@ class LightSoundController:
     def briggs_rauscher(self, p):
         self.leds.briggs_rauscher(p)
     
+    def start_loading_animation(self):
+        # save current state
+        self._saved_music_file = self.music_file
+        self._saved_music_volume = self.music_volume
+        self._saved_music_data = self.music_data
+        self._saved_music_fs = self.music_fs
+
+        # switch to loading music
+        self.stop_music()
+
+        self.music_file = "../assets/music/epic/epic_music.mp3"
+        self.music_volume = 1.0
+        self.music_data, self.music_fs = sf.read(self.music_file)
+
+        # play voice animation:
+        self._play("ai_obey", pause_after=0.5)
+        self.leds.breathing(15000)
+        self._play("ai_start_loading")
+        
+        
+        self.start_music()
+
+    def end_loading_animation(self):
+        self.stop_music()
+        
+        # play voice animation here
+
+        # restore previous state
+        self.music_file = self._saved_music_file
+        self.music_volume = self._saved_music_volume
+        self.music_data = self._saved_music_data
+        self.music_fs = self._saved_music_fs
+        # usually at this state the audio_engine takes the control of sound so this one is not needed anymore 
+        
+        
+
     # only for background music
     def _music_loop(self):
 
@@ -184,7 +223,7 @@ class LightSoundController:
                 # Inside OutputStream: audio runs in a separate real-time thread (C-level thread) callback is called independently
                 # So: callback does NOT keep your Python thread alive
                 # therefore this loop is keeping it alive
-        
+
     
     def start_music(self):
         if self.music_running: return # Avoid duplicate threads.

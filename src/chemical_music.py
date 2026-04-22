@@ -11,6 +11,7 @@ audio = AudioEngine(tracker, "music_files/progressive.json")
 plotter = PlotMonitor(tracker)
 clock = ClockDisplay(tracker)
 
+
 tracker.start()
 audio.start()
 plotter.start()
@@ -18,3 +19,8 @@ plotter.start()
 while True:
     clock.update()
     time.sleep(0.01)
+    print(tracker.p)
+# clock_initialized --> 
+#for the other event, rework voice led control so it can take tracker data 
+# and trigger the light show when the clock is initialized
+# , then trigger the music when the clock is active.

@@ -7,7 +7,10 @@ import time
 leds = LightSoundController("COM5")
 #leds = LEDController("COM5")
 time.sleep(2)
-leds.fade_out()
+leds.light_up()
+# is the background music playing ?
+time.sleep(10)
+leds.start_loading_animation()
 """ 
 leds.light_up()
 time.sleep(2)

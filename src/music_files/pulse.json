@@ -4,13 +4,14 @@
         "file": "../assets/music/ambient/soundscape_space_music_short.wav",
         "volume": 1,
         "mode": "sustain",
-        "cycle": 0
+        "start_cycle": 0
       },
       {
         "file": "../assets/music/pulse/far_hit.wav",
         "volume": 0.4,
         "mode": "retrigger",
-        "cycle": 1
+        "start_cycle": 1,
+        "retrigger_rate" : 1
       }
     ]
   }

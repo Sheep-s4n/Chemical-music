@@ -36,6 +36,10 @@ class OscillationTracker:
         # -------------------------
         self.raw_value = 0
         self.smoothed_value = 0
+        
+        self.min_value = float("inf")
+        self.max_value = float("-inf")
+        self.p = 0.0
 
         self.just_went_up = False
         self.just_went_down = False
@@ -77,6 +81,18 @@ class OscillationTracker:
     def _smooth(self, value):
         self.smooth_buffer.append(value)
         self.smoothed_value = sum(self.smooth_buffer) / len(self.smooth_buffer)
+        
+        span = abs(self.max_value - self.min_value)
+
+        # calculating p (it's just a normalized position of the smoothed value between min and max, clamped between 0 and 1) : 
+        if self.clock_initialized and span != 0 :
+            self.p = (self.smoothed_value - self.min_value) / span
+            self.p = max(0.0, min(1.0, self.p)) # just a security
+        else:
+            self.p = 0.0
+
+
+        
         return self.smoothed_value
 
     # -------------------------
@@ -116,7 +132,7 @@ class OscillationTracker:
                 self.waiting_for_next_up = False
 
             # clock period calculation
-            if len(self.up_transition_times) >= 2:
+            if len(self.up_transition_times) >= 3: # analyse de 3 cycles à changer sur l'UI ?
                 new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
 
                 if not self.clock_initialized:
@@ -154,6 +170,13 @@ class OscillationTracker:
                     continue
 
                 value = int(line)
+                
+                if not self.clock_initialized:
+                    if value < self.min_value:
+                        self.min_value = value
+
+                    if value > self.max_value:
+                        self.max_value = value
 
                 self.raw_value = value
                 smoothed = self._smooth(value)

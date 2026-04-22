@@ -42,12 +42,15 @@ class AudioEngine:
                 "audio": audio,
                 "volume": item["volume"],
                 "mode": item["mode"],
-                "cycle": item["cycle"],
-                "triggered": False
+                "start_cycle": item["start_cycle"],
+                "retrigger_rate": item.get("retrigger_rate", 1),
+                "triggered": False,
+                "pending_retriggers": 0,
+                "last_cycle_seen": -1
             })
 
         for item in self.content_list:
-            if item["mode"] == "sustain" and item["cycle"] == 0:
+            if item["mode"] == "sustain" and item["start_cycle"] == 0:
                 self.active_voices.append({
                     "audio": item["audio"],
                     "pos": 0,
@@ -72,7 +75,7 @@ class AudioEngine:
 
         for item in self.content_list:
             mode = item["mode"]
-            start_cycle = item["cycle"]
+            start_cycle = item["start_cycle"]
 
             if cycle < start_cycle:
                 continue
@@ -82,37 +85,33 @@ class AudioEngine:
                     "audio": item["audio"],
                     "pos": 0,
                     "volume": item["volume"],
-                    "loop": False
+                    "loop": False,
+                    "source": item
                 })
                 item["triggered"] = True
-
-            elif mode == "toggle":
-                if (cycle - start_cycle) % 2 == 0:
-                    self.active_voices.append({
-                        "audio": item["audio"],
-                        "pos": 0,
-                        "volume": item["volume"],
-                        "loop": False
-                    })
 
             elif mode == "sustain" and not item["triggered"]:
                 self.active_voices.append({
                     "audio": item["audio"],
                     "pos": 0,
                     "volume": item["volume"],
-                    "loop": True
+                    "loop": True,
+                    "source": item
                 })
                 item["triggered"] = True
-            
-            
+
             elif mode == "retrigger":
-                # plays every cycle after start_cycle
-                self.active_voices.append({
-                    "audio": item["audio"],
-                    "pos": 0,
-                    "volume": item["volume"],
-                    "loop": False
-                })
+                rate = item["retrigger_rate"]
+
+                if rate < 1:
+                    interval = int(round(1 / rate))
+                    if (cycle - start_cycle) % interval == 0:
+                        item["pending_retriggers"] = 1
+
+                else:
+                    if item["last_cycle_seen"] != cycle:
+                        item["pending_retriggers"] = int(rate)
+                        item["last_cycle_seen"] = cycle
 
     def _callback(self, outdata, frames, time_info, status):
         if self.tracker.just_went_up:
@@ -136,8 +135,22 @@ class AudioEngine:
                 if voice["loop"]:
                     voice["pos"] = 0
                 else:
+                    #self.active_voices = [v for v in self.active_voices if v is not voice]
+                    source = voice.get("source")
+
                     self.active_voices = [v for v in self.active_voices if v is not voice]
-                    #self.active_voices.remove(voice)
+
+                    if source and source["mode"] == "retrigger":
+                        if source["pending_retriggers"] > 0:
+                            source["pending_retriggers"] -= 1
+
+                            self.active_voices.append({
+                                "audio": source["audio"],
+                                "pos": 0,
+                                "volume": source["volume"],
+                                "loop": False,
+                                "source": source
+                            })
 
         alpha = self.brightness_from_x(self.tracker.smoothed_value)
         sensor_volume = self.volume_from_x(self.tracker.smoothed_value)

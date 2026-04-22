@@ -1,5 +1,5 @@
 assets/music/
-src/game/
 src/experimental_data/experiment_*.jsonl
+src/lundi.py
 **/__pycache__/
 models/**
