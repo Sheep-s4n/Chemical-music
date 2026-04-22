@@ -15,7 +15,7 @@ class OscillationTracker:
         count_required=5,
         smooth_size=30,
         buffer_size=2000,
-        period_avg_count=2
+        period_target=3
     ):
         # -------------------------
         # Serial
@@ -29,7 +29,7 @@ class OscillationTracker:
         # -------------------------
         self.threshold = threshold
         self.count_required = count_required
-        self.period_avg_count = period_avg_count
+        self.period_target = period_target
 
         # -------------------------
         # Shared values
@@ -87,7 +87,7 @@ class OscillationTracker:
         # calculating p (it's just a normalized position of the smoothed value between min and max, clamped between 0 and 1) : 
         if self.clock_initialized and span != 0 :
             self.p = (self.smoothed_value - self.min_value) / span
-            self.p = max(0.0, min(1.0, self.p)) # just a security
+            self.p = max(0.0, min(1.0, self.p))  # clamp p to [0,1] if the signal goes outside the calibrated range
         else:
             self.p = 0.0
 
@@ -132,13 +132,13 @@ class OscillationTracker:
                 self.waiting_for_next_up = False
 
             # clock period calculation
-            if len(self.up_transition_times) >= 3: # analyse de 3 cycles à changer sur l'UI ?
+            if len(self.up_transition_times) >=  2: # to ensure we have a full period
                 new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
 
                 if not self.clock_initialized:
                     self.periods.append(new_period)
 
-                    if len(self.periods) >= self.period_avg_count:
+                    if len(self.periods) >= self.period_target:
                         self.chemical_clock_period = mean(self.periods)
                         self.chemical_clock_time = now
                         self.clock_initialized = True

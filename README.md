@@ -23,8 +23,8 @@ The project relies on external hardware to gather real-time data:
 
 The setup captures the dynamic color changes of the chemical reaction using light sensing:
 
-<img width="500" height="375" alt="assembly_diagram_low_quality" src="https://github.com/user-attachments/assets/3ae6e8a6-17fa-4e8e-bff8-8710f63bf662" />
-<img width="500" height="375" alt="assembly_diagram_low_quality" src="https://github.com/user-attachments/assets/435f0629-7192-446f-a931-8ed98bbe21b3" />
+<img width="417" height="313" alt="assembly_diagram_low_quality" src="https://github.com/user-attachments/assets/3ae6e8a6-17fa-4e8e-bff8-8710f63bf662" />
+<img width="417" height="313" alt="assembly_diagram_low_quality" src="https://github.com/user-attachments/assets/435f0629-7192-446f-a931-8ed98bbe21b3" />
 
 
 

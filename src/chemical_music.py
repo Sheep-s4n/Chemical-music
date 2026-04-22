@@ -19,7 +19,6 @@ plotter.start()
 while True:
     clock.update()
     time.sleep(0.01)
-    print(tracker.p)
 # clock_initialized --> 
 #for the other event, rework voice led control so it can take tracker data 
 # and trigger the light show when the clock is initialized

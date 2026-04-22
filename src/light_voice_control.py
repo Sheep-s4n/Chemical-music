@@ -37,6 +37,4 @@ while True:
             vc.command_locked = True
             vc.latest_command = None
 
-""" 
-words ['antho', 'éteint', 'la', 'lumière', 'sublet']
-"""
+

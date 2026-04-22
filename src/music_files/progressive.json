@@ -8,28 +8,28 @@
       },
       {
         "file": "../assets/music/progressive/follow_waves/isolated/piano.wav",
-        "volume": 0.7,
+        "volume": 0.6,
         "mode": "retrigger",
-        "start_cycle": 1,
+        "start_cycle": 2,
         "retrigger_rate" : 0.5
       },
       {
         "file": "../assets/music/progressive/follow_waves/isolated/drums_1.wav",
         "volume": 0.7,
         "mode": "add_once",
-        "start_cycle": 2
+        "start_cycle": 1
       },
       {
         "file": "../assets/music/progressive/follow_waves/isolated/vocals_1.wav",
         "volume": 0.7,
         "mode": "add_once",
-        "start_cycle": 3
+        "start_cycle": 5
       },
       {
         "file": "../assets/music/progressive/follow_waves/isolated/bass_1.wav",
         "volume": 0.7,
         "mode": "add_once",
-        "start_cycle": 5
+        "start_cycle": 7
       }
     ]
   }

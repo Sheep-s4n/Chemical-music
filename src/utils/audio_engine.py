@@ -32,7 +32,6 @@ class AudioEngine:
             config = json.load(f)
 
         for item in config["content_list"]:
-            print(item)
             audio, sr = self._load_mono(item["file"])
 
             if self.sample_rate is None:
@@ -72,7 +71,6 @@ class AudioEngine:
 
     def _trigger_cycle_sounds(self):
         cycle = self.tracker.cycle_count
-
         for item in self.content_list:
             mode = item["mode"]
             start_cycle = item["start_cycle"]
@@ -102,15 +100,40 @@ class AudioEngine:
 
             elif mode == "retrigger":
                 rate = item["retrigger_rate"]
+                start_cycle = item["start_cycle"]
 
+                # --- CASE 1: slow retrigger (rate < 1) ---
                 if rate < 1:
                     interval = int(round(1 / rate))
-                    if (cycle - start_cycle) % interval == 0:
-                        item["pending_retriggers"] = 1
 
+                    if interval <= 0:
+                        interval = 1
+
+                    if (cycle - start_cycle) % interval == 0:
+                        self.active_voices.append({
+                            "audio": item["audio"],
+                            "pos": 0,
+                            "volume": item["volume"],
+                            "loop": False,
+                            "source": item
+                        })
+
+                # --- CASE 2: fast / multiple retriggers per cycle ---
                 else:
+                    # number of repeats per cycle
+                    repeats = int(rate)
+
+                    # avoid spamming every frame
                     if item["last_cycle_seen"] != cycle:
-                        item["pending_retriggers"] = int(rate)
+                        for _ in range(max(1, repeats)):
+                            self.active_voices.append({
+                                "audio": item["audio"],
+                                "pos": 0,
+                                "volume": item["volume"],
+                                "loop": False,
+                                "source": item
+                            })
+
                         item["last_cycle_seen"] = cycle
 
     def _callback(self, outdata, frames, time_info, status):
@@ -139,7 +162,6 @@ class AudioEngine:
                     source = voice.get("source")
 
                     self.active_voices = [v for v in self.active_voices if v is not voice]
-
                     if source and source["mode"] == "retrigger":
                         if source["pending_retriggers"] > 0:
                             source["pending_retriggers"] -= 1

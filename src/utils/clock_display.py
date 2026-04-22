@@ -21,7 +21,7 @@ class ClockDisplay:
             self.ui.draw_init(
                 self.tracker.periods,
                 self.tracker.chemical_clock_period,
-                self.tracker.period_avg_count
+                self.tracker.period_target
             )
         else:
             self.ui.draw_active(

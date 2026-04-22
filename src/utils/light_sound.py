@@ -28,7 +28,7 @@ class LightSoundController:
     # -------------------------
     # INIT
     # -------------------------
-    def __init__(self, port, baudrate=115200):
+    def __init__(self, port="COM5", baudrate=115200):
 
         self.leds = LEDController(port, baudrate)
 

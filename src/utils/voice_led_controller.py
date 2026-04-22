@@ -1,7 +1,6 @@
 import sounddevice as sd
 import queue
 import json
-import threading
 from vosk import Model, KaldiRecognizer
 
 class VoiceLEDController:
