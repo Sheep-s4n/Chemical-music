@@ -9,8 +9,7 @@ _The first test of Chemical Music (sound removed for copyright reasons) shows th
 
 This project explores the intersection of chemistry and art through an immersive experience. The **Briggs-Rauscher reaction** was chosen for its striking color changes, which can be monitored using a photoresistor.  
 
-The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. This data reflects the current color of the reaction and is processed in Python to generate **music**. Additionally, a **chemical clock** is implemented, as the color changes occur periodically.  
-
+The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. This data reflects the current color of the reaction and is processed in Python to generate music while simultaneously controlling LED colors that adapt in real time to the reaction. Additionally, a chemical clock is implemented to estimate the periodic color transitions, and voice commands can be used to interact with the lighting system during the experiment.
 
 # Hardware Setup
 
