@@ -1,2 +1,2 @@
 default_fqbn: arduino:avr:mega
-default_port: COM4
+default_port: COM6

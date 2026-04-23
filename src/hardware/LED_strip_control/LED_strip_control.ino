@@ -199,34 +199,32 @@ void breathingAnimation(uint32_t durationMs) {
 
 void execute(uint8_t type, uint8_t* data, uint8_t len) {
 
-    switch (type) {
-
-    case 0:
+    if (type == 0) {
         waveFromPoint(150);
-        break;
+    }
 
-    case 1:
+    else if (type == 1) {
         float p = data[0] / 255.0f;
         briggsRauscher(p);
-        break;
+    }
 
-    case 2:
-        //brightnessSpike(); // no params
-        break;
-    case 3:
-        fadeOutFromCurrent();  
-        break;
+    else if (type == 2) {
+        // brightnessSpike();
+    }
 
-    case 4:
+    else if (type == 3) {
+        fadeOutFromCurrent();
+    }
+
+    else if (type == 4) {
         uint32_t durationMs =
-        ((uint32_t)data[0] << 16) |
-        ((uint32_t)data[1] << 8)  |
-        (uint32_t)data[2];
+            ((uint32_t)data[0] << 16) |
+            ((uint32_t)data[1] << 8) |
+            (uint32_t)data[2];
 
         breathingAnimation(durationMs);
-        break;
-
     }
+    // switch statment broke the code for whatever reason ... 
 }
 
 void setup() {
@@ -240,7 +238,6 @@ void setup() {
 void loop() {
     while (Serial.available()) {
         uint8_t b = Serial.read(); // reads one byte the next one will be read in the next loop iteration, this way we can process the message byte by byte without blocking until the whole message is received
-        Serial.println(b, HEX);
         switch (state) {
 
         case 0: // waiting for start

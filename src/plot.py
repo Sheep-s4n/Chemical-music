@@ -25,7 +25,7 @@ for port in serial_port:
     print(f"{port.name} // {port.device} // D={port.description}")
 
 
-PORT = "COM4"        # Windows : "COM3" / Linux : "/dev/ttyACM0"
+PORT = "COM6"        # Windows : "COM3" / Linux : "/dev/ttyACM0"
 BAUDRATE = 9600
 
 ser = serial.Serial(PORT, BAUDRATE, timeout=1)

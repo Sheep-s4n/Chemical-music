@@ -9,7 +9,7 @@ from statistics import mean
 class OscillationTracker:
     def __init__(
         self,
-        port="COM4",
+        port="COM6",
         baudrate=9600,
         threshold=400,
         count_required=5,

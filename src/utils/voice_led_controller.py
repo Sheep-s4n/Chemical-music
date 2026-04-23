@@ -45,6 +45,18 @@ class VoiceLEDController:
         self.IDENTITY_WORDS = {
             "qui", "es", "identité"
         }
+        
+        self.START_WORDS = {
+            "lance", "démarre", "demarre", "commence",
+            "initialise", "active"
+        }
+        
+        self.ANALYSIS_CONTEXT = {
+            "analyse", "analyser",
+            "cycle", "cycles",
+            "mesure", "mesurer",
+            "suivi", "observation"
+        }
     # -------------------------
     # AUDIO CALLBACK
     # -------------------------
@@ -88,14 +100,19 @@ class VoiceLEDController:
                 any(w in self.INTRO_VERBS for w in words) and
                 any(w in self.INTRO_PRONOUNS for w in words)
             )
-            print(intro_requested)
             identity_requested = (
                 "qui" in words and "es-tu" in words
             )
-            print(identity_requested)
 
             if self.trigger_detected and (intro_requested or identity_requested):
                 self.latest_command = "SELF_INTRODUCTION"
+                return
+            
+            start_requested = any(w in self.START_WORDS for w in words)
+            analysis_requested = any(w in self.ANALYSIS_CONTEXT for w in words)
+
+            if self.trigger_detected and start_requested and analysis_requested:
+                self.latest_command = "START_LOADING"
                 return
 
         self.latest_command = None
@@ -112,7 +129,6 @@ class VoiceLEDController:
         # ---- PARTIAL (fast) ----
         partial_result = json.loads(self.rec.PartialResult())
         partial_text = partial_result.get("partial", "")
-
         if partial_text:
             self.latest_text = partial_text
             self._parse(partial_text)

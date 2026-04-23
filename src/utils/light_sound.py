@@ -21,6 +21,7 @@ class LightSoundController:
         "power_off": "../assets/sfx/LED/Poweroff_sfx.mp3",
         "ai_presentation" : "../assets/sfx/AI_voice/AI_presentation.wav",
         "ai_start_loading" : "../assets/sfx/AI_voice/AI_start_loading.mp3",
+        "ai_end_loading" : "../assets/sfx/AI_voice/AI_end_loading.mp3",
     }
     
 
@@ -130,7 +131,7 @@ class LightSoundController:
         self.leds.fade_out()
 
     def self_introduction(self):
-        self.leds.breathing(14000)
+        self.leds.breathing(15000)
         self._play("ai_presentation")
     
     def briggs_rauscher(self, p):
@@ -143,6 +144,11 @@ class LightSoundController:
         self._saved_music_data = self.music_data
         self._saved_music_fs = self.music_fs
 
+        # play voice animation:
+        self._play("ai_obey", pause_after=0.5)
+        self.leds.breathing(16000)
+        self._play("ai_start_loading")
+        
         # switch to loading music
         self.stop_music()
 
@@ -150,17 +156,16 @@ class LightSoundController:
         self.music_volume = 1.0
         self.music_data, self.music_fs = sf.read(self.music_file)
 
-        # play voice animation:
-        self._play("ai_obey", pause_after=0.5)
-        self.leds.breathing(15000)
-        self._play("ai_start_loading")
+
         
         
         self.start_music()
 
     def end_loading_animation(self):
         self.stop_music()
-        
+        self.leds.breathing(5500)
+        self._play("ai_end_loading")
+
         # play voice animation here
 
         # restore previous state
@@ -203,7 +208,7 @@ class LightSoundController:
             # stereo safety
             if chunk.ndim == 1:
                 chunk = np.column_stack([chunk, chunk]) # converts mono to stereo by duplicating the mono channel into both left and right channels
-
+            
             outdata[:] = chunk * self.music_volume #reduce amplitude for ambient music
             # outdata is a numpy array [:] is used to select the entire array
             # its a shared buffer owned by the audio engine.
@@ -233,10 +238,13 @@ class LightSoundController:
         self.music_thread.start()
     
     def stop_music(self):
+        while self.music_volume > 0:
+            self.music_volume -= 0.05
+            time.sleep(0.1)
         self.music_running = False
 
         if self.music_thread:
-            self.music_thread.join(timeout=1)
+            self.music_thread.join(timeout=1) # Pause the current thread for at most 1 seconds while waiting for music_thread to terminate.
             self.music_thread = None
     # -------------------------
     # CLEANUP

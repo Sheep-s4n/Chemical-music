@@ -13,7 +13,7 @@ from utils.light_sound import LightSoundController
 # INIT (NO START YET)
 # -------------------------
 
-tracker = OscillationTracker("COM4")
+tracker = OscillationTracker("COM6")
 audio = AudioEngine(tracker, "music_files/progressive.json")
 plotter = PlotMonitor(tracker)
 clock = ClockDisplay(tracker)
@@ -50,12 +50,12 @@ while True:
         # START SYSTEM ON DEMAND
         # -------------------------
         if cmd == "START_LOADING" and not system_started:
-            controller.start_loading_animation()
             tracker.start()
             plotter.start()
 
             system_started = True
-            print("System activated")
+            controller.start_loading_animation()
+            print("System activated") 
 
         # -------------------------
         # OTHER COMMANDS
@@ -78,11 +78,11 @@ while True:
     if system_started:
     # start audio ONLY when tracker is ready
         if tracker.clock_initialized and not audio_started:
+            controller.end_loading_animation() # blocks the thread but it's made on purpose
+
             audio.start()
             audio_started = True
 
-            # stop loading animation exactly once
-            controller.end_loading_animation()
 
         clock.update()
 
