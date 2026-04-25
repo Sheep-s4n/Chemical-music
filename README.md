@@ -90,7 +90,7 @@ _Example:_
 
 # Notes
 
-> Music files have been temporarily removed due to copyright restrictions. Royalty-free music will be added in the future.  
+> Due to copyright restrictions, some music files have been temporarily removed. This includes the files listed in progressive.json, but plot.json is copyright-free.
 
 > **Voice Recognition & Voice-Control Model**
 >
