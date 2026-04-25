@@ -7,7 +7,7 @@ from utils.clock_display import ClockDisplay
 
 
 tracker = OscillationTracker(port="COM6")
-audio = AudioEngine(tracker, "music_files/progressive.json")
+audio = AudioEngine(tracker, "music_files/pulse.json")
 plotter = PlotMonitor(tracker)
 clock = ClockDisplay(tracker)
 

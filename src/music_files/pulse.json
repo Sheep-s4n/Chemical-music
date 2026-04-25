@@ -1,17 +1,19 @@
 {
     "content_list": [
       {
-        "file": "../assets/music/ambient/soundscape_space_music_short.wav",
+        "file": "../assets/music/ambient/MANTRON.mp3",
         "volume": 1,
         "mode": "sustain",
-        "start_cycle": 0
+        "start_cycle": 0,
+        "light_pulse" : false
       },
       {
         "file": "../assets/music/pulse/far_hit.wav",
         "volume": 0.4,
         "mode": "retrigger",
         "start_cycle": 1,
-        "retrigger_rate" : 1
+        "retrigger_rate" : 1,
+        "light_pulse" : true
       }
     ]
   }

@@ -68,6 +68,7 @@ class OscillationTracker:
         # -------------------------
         self.data_buffer = deque(maxlen=buffer_size)
         self.smooth_buffer = deque(maxlen=smooth_size)
+        self.time_buffer = deque(maxlen=buffer_size)
 
         # -------------------------
         # Thread control
@@ -181,7 +182,11 @@ class OscillationTracker:
                 self.raw_value = value
                 smoothed = self._smooth(value)
 
+                now = time.time() - self.t0
+                
                 self.data_buffer.append(smoothed)
+                self.time_buffer.append(now)
+
 
                 self._process_value(value)
 
@@ -195,8 +200,10 @@ class OscillationTracker:
     def start(self):
         if self.running:
             return
-
+        
         self.running = True
+        self.t0 = time.time()  # reference time = 0 point
+
         self.thread = threading.Thread(target=self._loop, daemon=True)
         self.thread.start()
 
@@ -217,3 +224,6 @@ class OscillationTracker:
 
     def get_plot_data(self):
         return list(self.data_buffer)
+    
+    def get_plot_time_data(self):
+        return list(self.time_buffer)

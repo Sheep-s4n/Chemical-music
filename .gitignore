@@ -1,4 +1,8 @@
-assets/music/
+assets/music/progressive/*
+assets/music/ambient/*
+assets/music/04_Gm_120_BPM/*
+!assets/music/ambient/MANTRON.mp3
+!assets/music/ambient/sci-fi_ambient.mp3
 src/experimental_data/experiment_*.jsonl
 src/lundi.py
 **/__pycache__/

@@ -5,7 +5,7 @@ import soundfile as sf
 
 
 class AudioEngine:
-    def __init__(self, tracker, config_path, x_min=0, x_max=700, master_gain=1.4):
+    def __init__(self, tracker, config_path, light_animation_controller=None, x_min=0, x_max=700, master_gain=1.4):
         self.tracker = tracker
         self.config_path = config_path
         self.x_min = x_min
@@ -18,6 +18,8 @@ class AudioEngine:
 
         self.sample_rate = None
         self.stream = None
+        
+        self.light_animation_controller = light_animation_controller
 
         self._load_config()
 
@@ -43,6 +45,7 @@ class AudioEngine:
                 "mode": item["mode"],
                 "start_cycle": item["start_cycle"],
                 "retrigger_rate": item.get("retrigger_rate", 1),
+                "light_pulse": item.get("light_pulse", False),
                 "triggered": False,
                 "pending_retriggers": 0,
                 "last_cycle_seen": -1
@@ -86,6 +89,11 @@ class AudioEngine:
                     "loop": False,
                     "source": item
                 })
+                
+                if item.get("light_pulse") and self.light_animation_controller:
+                    self.light_animation_controller.flash_leds()
+                
+                
                 item["triggered"] = True
 
             elif mode == "sustain" and not item["triggered"]:
@@ -96,6 +104,10 @@ class AudioEngine:
                     "loop": True,
                     "source": item
                 })
+                
+                if item.get("light_pulse") and self.light_animation_controller:
+                    self.light_animation_controller.flash_leds()
+                    
                 item["triggered"] = True
 
             elif mode == "retrigger":
@@ -117,6 +129,9 @@ class AudioEngine:
                             "loop": False,
                             "source": item
                         })
+                        
+                        if item.get("light_pulse") and self.light_animation_controller:
+                            self.light_animation_controller.flash_leds()
 
                 # --- CASE 2: fast / multiple retriggers per cycle ---
                 else:
@@ -133,6 +148,9 @@ class AudioEngine:
                                 "loop": False,
                                 "source": item
                             })
+                            
+                            if item.get("light_pulse") and self.light_animation_controller:
+                                self.light_animation_controller.flash_leds()
 
                         item["last_cycle_seen"] = cycle
 

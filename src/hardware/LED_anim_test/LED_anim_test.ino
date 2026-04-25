@@ -17,86 +17,26 @@ void setup() {
 
     FastLED.clear();
     FastLED.show();
+    for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CRGB::Blue;
+    }
+    FastLED.setBrightness(175);
+    FastLED.show();
 }
 
 
-void briggsRauscher(float p) {
+void flashLEDs() {
+    uint8_t originalBrightness = FastLED.getBrightness();
 
-    static float prevP = 0;
+    FastLED.setBrightness(255);
+    FastLED.show();
+    delay(100);
 
-    bool wasBlue = (prevP >= THRESHOLD);
-    bool isBlue  = (p >= THRESHOLD);
-
-    uint8_t oldSat = (uint8_t)(prevP * (255.0 / THRESHOLD));
-    uint8_t newSat = (uint8_t)(p     * (255.0 / THRESHOLD));
-
-    // ------------------------------------
-    // yellow family animation
-    // ------------------------------------
-    if (!wasBlue && !isBlue) {
-
-
-        int step = (newSat > oldSat) ? 1 : -1;
-
-        for (int i = oldSat; i != newSat; i += step) {
-            fill_solid(leds, NUM_LEDS, CHSV(56, i, 175));
-            FastLED.show();
-            delay(20);
-        }
-
-        fill_solid(leds, NUM_LEDS, CHSV(56, newSat, 175));
-        FastLED.show();
-    }
-
-    // ------------------------------------
-    // yellow -> blue transition
-    // ------------------------------------
-    else if (!wasBlue && isBlue) {
-
-        for (int i = 175; i >= 0; i-= 10) {
-            fill_solid(leds, NUM_LEDS, CHSV(56, oldSat, i));
-            FastLED.show();
-        }
-        for (int i = 0; i <= 175; i+= 10) {
-            fill_solid(leds, NUM_LEDS, CHSV(165, 255, i));
-            FastLED.show();
-        }
-        // transition animation
-
-    }
-
-    // ------------------------------------
-    // stable blue
-    // ------------------------------------
-    else if (wasBlue && isBlue) {
-
-        // solid blue : 今分かりません、まだ考えています。 :D
-
-    }
-
-    // ------------------------------------
-    // blue -> yellow transition
-    // ------------------------------------
-    else if (wasBlue && !isBlue) {
-
-        // transition animation
-        for (int i = 255; i >= 0; i-= 5) {
-            fill_solid(leds, NUM_LEDS, CHSV(165, i , 175));
-            FastLED.show();
-        }
-    }
-
-    prevP = p;
+    FastLED.setBrightness(originalBrightness);
+    FastLED.show();
 }
 
 void loop() {
-
-    // simple smooth oscillation for testing
-    globalP += 0.2;
-    if (globalP > 1) globalP = 0;
-
-    briggsRauscher(globalP);
-
-    FastLED.show();
-    delay(250);
+    delay(3000);
+    flashLEDs();
 }

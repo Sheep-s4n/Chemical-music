@@ -13,13 +13,14 @@ from utils.light_sound import LightSoundController
 # INIT (NO START YET)
 # -------------------------
 
+controller = LightSoundController("COM5")
+vc = VoiceLEDController("../models/vosk-model-small-fr-0.22")
+
 tracker = OscillationTracker("COM6")
-audio = AudioEngine(tracker, "music_files/progressive.json")
+audio = AudioEngine(tracker, "music_files/pulse.json", light_animation_controller=controller)
 plotter = PlotMonitor(tracker)
 clock = ClockDisplay(tracker)
 
-controller = LightSoundController("COM5")
-vc = VoiceLEDController("../models/vosk-model-small-fr-0.22")
 time.sleep(2)
 
 
@@ -34,6 +35,7 @@ controller.start_music()
 
 system_started = False
 audio_started = False
+last_led_update = 0
 
 # -------------------------
 # MAIN LOOP (ALWAYS RUNNING)
@@ -85,5 +87,12 @@ while True:
 
 
         clock.update()
+        # run every 0.25 second (4 fps) without blocking the thread :
+        current_time = time.time()
+
+        if current_time - last_led_update >= 0.25:
+            controller.briggs_rauscher(tracker.p)
+            last_led_update = current_time
+        
 
 

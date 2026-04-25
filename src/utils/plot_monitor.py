@@ -11,14 +11,19 @@ class PlotMonitor:
     def _loop(self):
         plt.ion()
         fig, ax = plt.subplots()
+        
+        ax.set_xlabel("Temps (s)")
+        ax.set_ylabel("Intensité lumineuse (u.a.)")
+    
         line, = ax.plot([], [], lw=2)
 
         while self.running:
             data = self.tracker.get_plot_data()
-
+            times = self.tracker.get_plot_time_data()
+            
             if len(data) > 1:
-                line.set_data(range(len(data)), data)
-                ax.set_xlim(0, len(data))
+                line.set_data(times, data)
+                ax.set_xlim(times[0], times[-1])
                 ax.set_ylim(min(data) - 50, max(data) + 50)
 
                 fig.canvas.draw()

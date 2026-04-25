@@ -5,7 +5,7 @@ START_MARKER = 0xFF
 
 TYPE_LIGHT_UP = 0
 TYPE_BRIGGS_RAUSCHER = 1
-TYPE_BRIGHTNESS_SPIKE = 2
+TYPE_FLASH_LEDS = 2
 TYPE_FADE_OUT = 3
 TYPE_BREATHING = 4
 
@@ -31,6 +31,9 @@ class LEDController:
     def light_up(self):
         self._send_packet(TYPE_LIGHT_UP)
 
+    def flash_leds(self):
+        self._send_packet(TYPE_FLASH_LEDS)
+    
     def briggs_rauscher(self, p):
         """
         p : float from 0.0 to 1.0

@@ -27,17 +27,30 @@ void briggsRauscher(float p) {
     uint8_t newSat = (uint8_t)(p     * (255.0 / THRESHOLD));
 
     // ------------------------------------
+    // fixing brightness at 175
+    // ------------------------------------
+    uint8_t current = FastLED.getBrightness();
+
+      while (current != 175) {
+          current += (current < 175) ? 1 : -1;
+
+          FastLED.setBrightness(current);
+          FastLED.show();
+
+          delay(5);
+      }
+
+    // ------------------------------------
     // yellow family animation
     // ------------------------------------
     if (!wasBlue && !isBlue) {
 
 
-        int step = (newSat > oldSat) ? 1 : -1;
+        int step = (newSat > oldSat) ? 1: -1;
 
         for (int i = oldSat; i != newSat; i += step) {
             fill_solid(leds, NUM_LEDS, CHSV(56, i, 175));
             FastLED.show();
-            delay(20);
         }
 
         fill_solid(leds, NUM_LEDS, CHSV(56, newSat, 175));
@@ -143,6 +156,16 @@ void fadeOutFromCurrent(int frameDelay = 10) {
   FastLED.show();
 }
 
+void flashLEDs() {
+    uint8_t originalBrightness = FastLED.getBrightness();
+
+    FastLED.setBrightness(255);
+    FastLED.show();
+    delay(100);
+
+    FastLED.setBrightness(originalBrightness);
+    FastLED.show();
+}
 
 void breathingAnimation(uint32_t durationMs) {
 
@@ -209,7 +232,7 @@ void execute(uint8_t type, uint8_t* data, uint8_t len) {
     }
 
     else if (type == 2) {
-        // brightnessSpike();
+        flashLEDs();
     }
 
     else if (type == 3) {

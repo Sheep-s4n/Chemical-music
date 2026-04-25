@@ -137,6 +137,9 @@ class LightSoundController:
     def briggs_rauscher(self, p):
         self.leds.briggs_rauscher(p)
     
+    def flash_leds(self):
+        self.leds.flash_leds()
+    
     def start_loading_animation(self):
         # save current state
         self._saved_music_file = self.music_file
