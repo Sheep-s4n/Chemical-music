@@ -9,7 +9,68 @@ _The first test of Chemical Music (sound removed for copyright reasons) shows th
 
 This project explores the intersection of chemistry and art through an immersive experience. The **Briggs-Rauscher reaction** was chosen for its striking color changes, which can be monitored using a photoresistor.  
 
-The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. This data reflects the current color of the reaction and is processed in Python to generate music while simultaneously controlling LED colors that adapt in real time to the reaction. Additionally, a chemical clock is implemented to estimate the periodic color transitions, and voice commands can be used to interact with the lighting system during the experiment.
+The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. This data reflects the current color of the reaction and is processed in Python to generate music while simultaneously controlling LED colors that adapt in real time to the reaction. Additionally, a chemical clock is implemented based on the periodic color transitions, and voice commands can be used to interact with the lighting system during the experience.
+
+---
+
+# Music File System
+
+The project uses custom configuration files written in **JSON format** to describe how each audio layer behaves during the chemical reaction.
+
+Although the files use the **`.chm` extension**, they use JSON syntax.
+
+Examples can be found in `src/music_files`.
+
+
+## Structure
+
+Each configuration file contains a single root object:
+
+- **content_list**: list of audio layers to be played
+
+Each element inside `content_list` defines one sound source.
+
+
+## Parameters
+
+### file
+Path to the audio file.  
+This path is **relative to the file from which the program is executed**.
+
+
+
+### volume
+Playback amplitude between `0` and `1`.
+
+
+### mode
+Determines how the sound behaves.
+
+Possible values:
+- `sustain` : loops continuously after activation  
+- `retrigger` : restarts periodically at each defined interval  
+- `add_once` : starts once and remains active  
+
+
+### start_cycle
+Chemical oscillation cycle at which the layer becomes active.
+
+
+### retrigger_rate
+Used only if the mode is **retrigger**.
+
+Defines how many times the sound is replayed per cycle.
+
+Examples:
+
+- `1` : every cycle  
+- `2` : twice per cycle  
+- `0.5` : every two cycles  
+
+### light_pulse
+Controls whether the LEDs emit a synchronized pulse when the sound is triggered.
+
+--- 
 
 # Hardware Setup
 
@@ -86,11 +147,11 @@ _Example:_
 
 <img width="500" alt="power_injection_low_res" height="375" src="https://github.com/user-attachments/assets/61630cac-c5f4-4ba2-9eb7-e3059a54f22c">
 
-
+---
 
 # Notes
 
-> Due to copyright restrictions, some music files have been temporarily removed. This includes the files listed in progressive.json, but plot.json is copyright-free.
+> Due to copyright restrictions, some music files have been temporarily removed. This includes some files used in `progressive.chm`, but `plot.chm` is copyright-free.
 
 > **Voice Recognition & Voice-Control Model**
 >

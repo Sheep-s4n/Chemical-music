@@ -17,7 +17,7 @@ controller = LightSoundController("COM5")
 vc = VoiceLEDController("../models/vosk-model-small-fr-0.22")
 
 tracker = OscillationTracker("COM6")
-audio = AudioEngine(tracker, "music_files/pulse.json", light_animation_controller=controller)
+audio = AudioEngine(tracker, "music_files/pulse.chm", light_animation_controller=controller)
 plotter = PlotMonitor(tracker)
 clock = ClockDisplay(tracker)
 
