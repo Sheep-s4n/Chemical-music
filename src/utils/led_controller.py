@@ -42,9 +42,6 @@ class LEDController:
         p_byte = max(0, min(255, int(p * 255)))
         self._send_packet(TYPE_BRIGGS_RAUSCHER, [p_byte])
     
-
-    def brightness_spike(self):
-        self._send_packet(TYPE_BRIGHTNESS_SPIKE)
     
     def fade_out(self):
         self._send_packet(TYPE_FADE_OUT)

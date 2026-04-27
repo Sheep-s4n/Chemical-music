@@ -24,7 +24,13 @@ class PlotMonitor:
             if len(data) > 1:
                 line.set_data(times, data)
                 ax.set_xlim(times[0], times[-1])
-                ax.set_ylim(min(data) - 50, max(data) + 50)
+                if self.tracker.min_value != float("inf") and self.tracker.max_value != float("-inf"):
+                    ax.set_ylim(
+                        self.tracker.min_value - 50,
+                        self.tracker.max_value + 50
+                    )
+                else:
+                    ax.set_ylim(min(data) - 50, max(data) + 50)
 
                 fig.canvas.draw()
                 fig.canvas.flush_events()

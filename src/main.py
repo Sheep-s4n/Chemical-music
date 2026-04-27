@@ -56,7 +56,7 @@ while True:
             plotter.start()
 
             system_started = True
-            controller.start_loading_animation()
+            controller.start_loading_animation() # blocks the thread --> to fix
             print("System activated") 
 
         # -------------------------
@@ -64,21 +64,26 @@ while True:
         # -------------------------
         if cmd == "LIGHT_ON":
             controller.light_up()
-
+            vc.command_locked = True
+            vc.latest_command = None
         elif cmd == "LIGHT_OFF":
             controller.fade_out()
-
+            vc.command_locked = True
+            vc.latest_command = None
+            
         elif cmd == "SELF_INTRODUCTION":
             controller.self_introduction()
+            vc.command_locked = True
+            vc.latest_command = None
 
-        vc.command_locked = True
-        vc.latest_command = None
 
     # -------------------------
     # ONLY RUN CLOCK IF SYSTEM IS ACTIVE
     # ------------------------- 
     if system_started:
     # start audio ONLY when tracker is ready
+        clock.update()
+
         if tracker.clock_initialized and not audio_started:
             controller.end_loading_animation() # blocks the thread but it's made on purpose
 
@@ -86,7 +91,6 @@ while True:
             audio_started = True
 
 
-        clock.update()
         # run every 0.25 second (4 fps) without blocking the thread :
         current_time = time.time()
 

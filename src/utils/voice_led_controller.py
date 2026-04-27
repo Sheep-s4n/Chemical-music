@@ -74,7 +74,6 @@ class VoiceLEDController:
         trigger = any(w in self.TRIGGERS for w in words)
         if trigger or  "en tout" in text.lower():
             self.trigger_detected = True
-            self.trigger_detected = True
         else:
             self.trigger_detected = False
 
@@ -121,10 +120,19 @@ class VoiceLEDController:
     # PUBLIC UPDATE LOOP STEP
     # -------------------------
     def update(self):
-        data = self.q.get()
+        data = None
+
+        try:
+            while True:
+                data = self.q.get_nowait()
+        except queue.Empty:
+            pass
+
+        if data is None:
+            return
 
         # always feed audio
-        self.rec.AcceptWaveform(data)
+        is_final = self.rec.AcceptWaveform(data)
 
         # ---- PARTIAL (fast) ----
         partial_result = json.loads(self.rec.PartialResult())
@@ -135,7 +143,7 @@ class VoiceLEDController:
 
         
             # ---- FINAL (stable) ----
-        if self.rec.AcceptWaveform(data):
+        if is_final:
             final_result = json.loads(self.rec.Result())
             final_text = final_result.get("text", "")
             self.latest_text = final_text
@@ -159,7 +167,7 @@ class VoiceLEDController:
 
         self.stream = sd.RawInputStream(
             samplerate=self.sample_rate,
-            blocksize=8000,
+            blocksize=1024,
             dtype='int16',
             channels=1,
             callback=self._callback
