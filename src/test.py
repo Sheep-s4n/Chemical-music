@@ -36,9 +36,7 @@ while True:
             vc.command_locked = True
             vc.latest_command = None
 
-# 1. tester avec deux micros
-# faire la nouvelle commande pour lancer l'analyse
- 
+
 
 """" 
 leds = LightSoundController("COM5")
@@ -48,5 +46,18 @@ leds.start_music() #for background music
 leds.light_up()
 time.sleep(2)
 leds.briggs_rauscher(0.8) 
+
+"""
+
+""" 
+On  part sur un système de buffer tailler ilimité pour stoquer les donnés (pas un système de queue comme pour le temps réel)
+
+on trouve un treshold avec min et max ça va juste etre (max -min) / 2, je pense que le critère pour arreter l'analyse de min et max, va etre genre la densité de points par lequelle on est passer 2 fois atteint les 80% (en gros sur toute les données qu'on a si plus de 80% sont dupliquer alors on considère qu'on a un min et max cohérent --> j'ai pas trouver d'autre critère comme ça mais si t'a une meilleur idée je prend)
+maintenant qu'on dispose de min et max on peut définir un treshold
+avec le treshold on peut calcule la période de deux cycle : on fait leur moyenne
+Mtn on passe à la phase en temps réel avec un buffer qui fonctionne comme une queu :
+1. le système de treshold va suffir pour trouver les changement de cycle pour l'horloge 
+
+pour la musique réactionnel et le pulse, on analyse la dérive pour voir son signe si plus de -50% (la pente) alors on considére qu'on passe à la phase bleu , ce qui correspond au moment ou la courbe chute drastiquement presque comme une asymptote verticale et on confirme mais jsp comment et pour le blanc j'imagine dès qu'on remonte avec une courbe de 5% on peut considérer qu'on repasser au blanc -jaune
 
 """

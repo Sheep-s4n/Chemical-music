@@ -2,7 +2,7 @@
 
 
 
-https://github.com/user-attachments/assets/7c9f23ff-6d8b-49c5-987c-4352c482ddcf
+https://github.com/user-attachments/assets/50837e60-16b6-4df0-b1af-7cbb3eb11cc2
 
 _The first test of Chemical Music (sound removed for copyright reasons) shows the projected diagram adapting to the reaction’s color cycles, illustrating its oscillations._
 
