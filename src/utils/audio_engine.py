@@ -89,7 +89,6 @@ class AudioEngine:
         return 0.55 - norm * 0.1
 
     def _trigger_cycle_sounds(self):
-        print("trigger cycles music !")
         cycle = self.tracker.cycle_count
         for item in self.content_list:
             mode = item["mode"]

@@ -12,9 +12,9 @@ class OscillationTracker:
         self,
         port="COM6",
         baudrate=9600,
-        threshold=400,
+        threshold=200,
         count_required=100,
-        smooth_size=40,
+        smooth_size=30,
         buffer_size=16000,
         period_target=3,
         arduino_mode=True
@@ -30,13 +30,29 @@ class OscillationTracker:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
         else : 
             #self.ser = RealDataSimulator("experimental_data/valeurs_simul.json")
-            self.ser = JSONLTimeReader("experimental_data/value_exp_2.jsonl")
+            self.ser = JSONLTimeReader("experimental_data/experiment_8.jsonl")
         # -------------------------
         # Detection settings
         # -------------------------
-        self.threshold = threshold
+        self.threshold = threshold 
+        self.threshold_calibrated = False
+
+
+        self.calibration_buffer = []  # unlimited, only used during calibration
+        
+        
         self.count_required = count_required
         self.period_target = period_target
+
+        self.derivative = 0.0
+        self.derivative_window = 30
+        
+        self.last_cycle_time = None
+        self.min_cycle_gap = 3.0  # seconds — tune to be safely below your period
+        
+        self.derivative_buffer = deque(maxlen=40)
+        self.deriv_threshold = 400
+        self.deriv_count_required = 25
 
         # -------------------------
         # Shared values
@@ -90,6 +106,14 @@ class OscillationTracker:
         self.smooth_buffer.append(value)
         self.smoothed_value = sum(self.smooth_buffer) / len(self.smooth_buffer)
         
+        # -- derivative calculation --
+        if len(self.time_buffer) >= self.derivative_window:
+            dt = self.time_buffer[-1] - self.time_buffer[-self.derivative_window]
+            dv = self.smooth_buffer[-1] - self.smooth_buffer[-self.derivative_window]
+            self.derivative = dv / dt if dt > 0 else 0.0
+            self.derivative_buffer.append(self.derivative)
+
+        
         span = abs(self.max_value - self.min_value)
 
         # calculating p (it's just a normalized position of the smoothed value between min and max, clamped between 0 and 1) : 
@@ -108,8 +132,36 @@ class OscillationTracker:
     # -------------------------
     def _process_value(self, value):
         #self.just_went_up = False // audio_engine will turn it false when it has processed the transition
-        self.just_went_down = False
+        #self.just_went_down = False
 
+        
+        count_down = sum(1 for d in self.derivative_buffer if d < -self.deriv_threshold)
+
+        if count_down >= self.deriv_count_required:
+            now = time.time()
+
+            if self.last_cycle_time is None or (now - self.last_cycle_time) > self.min_cycle_gap:
+                self.just_went_up = True #actually it's not true but it's for audio engine
+                self.cycle_count += 1
+                self.last_cycle_time = now
+                print(f"New cycle detected (passed with {count_down}) — cycle {self.cycle_count}")
+
+                # clock logic (unchanged)
+                self.up_transition_times.append(now)
+
+                if len(self.up_transition_times) >= 2:
+                    new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
+
+                    if not self.clock_initialized:
+                        self.periods.append(new_period)
+                        if len(self.periods) >= self.period_target:
+                            self.chemical_clock_period = mean(self.periods)
+                            self.chemical_clock_time = now
+                            self.clock_initialized = True
+                    else:
+                        self.chemical_clock_time += self.chemical_clock_period
+                        self.phase_error = now - self.chemical_clock_time
+        """ 
         if value > self.threshold:
             self.above_count += 1
             self.below_count = 0
@@ -121,7 +173,6 @@ class OscillationTracker:
         else:
             self.above_count = 0
             self.below_count = 0
-
         # -------------------------
         # UP transition
         # -------------------------
@@ -139,10 +190,16 @@ class OscillationTracker:
                 self.cycle_count += 1
                 self.waiting_for_next_up = False
 
+            
             # clock period calculation
             if len(self.up_transition_times) >=  2: # to ensure we have a full period
                 new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
 
+                if not self.threshold_calibrated : 
+                    self.threshold = (self.min_value + self.max_value) / 2
+                    self.threshold_calibrated = True
+                    print(f"Threshold auto-set: {self.threshold:.1f}  (min={self.min_value}, max={self.max_value})")
+                
                 if not self.clock_initialized:
                     self.periods.append(new_period)
 
@@ -165,6 +222,7 @@ class OscillationTracker:
 
             # half cycle completed
             self.waiting_for_next_up = True
+        """
 
     # -------------------------
     # Main loop
