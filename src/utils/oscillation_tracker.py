@@ -5,6 +5,7 @@ import time
 from collections import deque
 from statistics import mean
 from .simul_arduino import RealDataSimulator
+from .simul_arduino import JSONLTimeReader
 
 class OscillationTracker:
     def __init__(
@@ -12,9 +13,9 @@ class OscillationTracker:
         port="COM6",
         baudrate=9600,
         threshold=400,
-        count_required=5,
-        smooth_size=30,
-        buffer_size=2000,
+        count_required=100,
+        smooth_size=40,
+        buffer_size=16000,
         period_target=3,
         arduino_mode=True
     ):
@@ -28,7 +29,8 @@ class OscillationTracker:
             self.baudrate = baudrate
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
         else : 
-            self.ser = RealDataSimulator("experimental_data/valeurs_simul.json")
+            #self.ser = RealDataSimulator("experimental_data/valeurs_simul.json")
+            self.ser = JSONLTimeReader("experimental_data/value_exp_2.jsonl")
         # -------------------------
         # Detection settings
         # -------------------------

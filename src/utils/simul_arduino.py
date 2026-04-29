@@ -83,3 +83,49 @@ class RealDataSimulator:
 
         time.sleep(self.sample_interval)
         return self.data[self.index]
+
+
+class JSONLTimeReader:
+    def __init__(self, path, loop=True):
+        self.loop = loop
+
+        self.data = []
+        with open(path, "r") as f:
+            for line in f:
+                line = line.strip().strip(",")  # safety for malformed JSONL
+                if line:
+                    self.data.append(json.loads(line))
+
+        self.data.sort(key=lambda x: x["time"])
+
+        self.t0 = self.data[0]["time"]
+        self.t_end = self.data[-1]["time"]
+        self.duration = self.t_end - self.t0
+
+        self.start_real = None
+
+    def read(self):
+        now = time.monotonic()
+
+        if self.start_real is None:
+            self.start_real = now
+
+        elapsed = now - self.start_real
+
+        # handle looping in time domain
+        if self.loop and self.duration > 0:
+            elapsed = elapsed % self.duration
+
+        target_time = self.t0 + elapsed
+
+        # linear scan (simple + robust for small datasets)
+        index = 0
+        for i in range(len(self.data)):
+            if self.data[i]["time"] <= target_time:
+                index = i
+            else:
+                break
+        
+        time.sleep(0.001)  # small yield to avoid CPU spin
+
+        return self.data[index]["value"]
