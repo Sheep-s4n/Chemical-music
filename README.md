@@ -38,7 +38,6 @@ Path to the audio file.
 This path is **relative to the file from which the program is executed**.
 
 
-
 ### volume
 Playback amplitude between `0` and `1`.
 
@@ -69,6 +68,28 @@ Examples:
 
 ### light_pulse
 Controls whether the LEDs emit a synchronized pulse when the sound is triggered.
+
+## Simulator (Testing Chemical Music)
+
+A built-in simulator is available to test and visualize chemical music without external hardware.
+
+The entry point is `src/chm_player.py`.
+
+### How to run
+
+1. Open the file `src/chm_player.py`
+2. Set the music file you want to use by modifying:
+
+```python
+MUSIC_FILE_RELATIVE_PATH = "music_files/pulse.chm"
+```
+
+3. Open a command-line interface in the project in the `src/` folder
+4. Run:
+
+```bash
+python chm_player.py
+```
 
 --- 
 

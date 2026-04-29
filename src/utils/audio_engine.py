@@ -29,6 +29,11 @@ class AudioEngine:
             audio = audio.mean(axis=1)
         return audio.astype(np.float32), sr
 
+    def _repeat_audio(self, audio, n):
+        if n <= 1:
+            return audio
+        return np.concatenate([audio for _ in range(n)])
+
     def _load_config(self):
         with open(self.config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
@@ -38,13 +43,22 @@ class AudioEngine:
 
             if self.sample_rate is None:
                 self.sample_rate = sr
+                
+
+            retrigger_rate = item.get("retrigger_rate", 1)
+
+            # -------------------------
+            # PREBUILD retrigger > 1
+            # -------------------------
+            if item["mode"] == "retrigger" and retrigger_rate > 1:
+                audio = self._repeat_audio(audio, int(retrigger_rate))
 
             self.content_list.append({
                 "audio": audio,
                 "volume": item["volume"],
                 "mode": item["mode"],
                 "start_cycle": item["start_cycle"],
-                "retrigger_rate": item.get("retrigger_rate", 1),
+                "retrigger_rate": retrigger_rate,
                 "light_pulse": item.get("light_pulse", False),
                 "triggered": False,
                 "pending_retriggers": 0,
@@ -60,6 +74,8 @@ class AudioEngine:
                     "loop": True
                 })
 
+
+
     def brightness_from_x(self, x):
         alpha_min = 0.01
         alpha_max = 0.25
@@ -73,6 +89,7 @@ class AudioEngine:
         return 0.55 - norm * 0.1
 
     def _trigger_cycle_sounds(self):
+        print("trigger cycles music !")
         cycle = self.tracker.cycle_count
         for item in self.content_list:
             mode = item["mode"]
@@ -135,24 +152,18 @@ class AudioEngine:
 
                 # --- CASE 2: fast / multiple retriggers per cycle ---
                 else:
-                    # number of repeats per cycle
-                    repeats = int(rate)
 
-                    # avoid spamming every frame
-                    if item["last_cycle_seen"] != cycle:
-                        for _ in range(max(1, repeats)):
-                            self.active_voices.append({
-                                "audio": item["audio"],
-                                "pos": 0,
-                                "volume": item["volume"],
-                                "loop": False,
-                                "source": item
-                            })
+                    self.active_voices.append({
+                        "audio": item["audio"],
+                        "pos": 0,
+                        "volume": item["volume"],
+                        "loop": False,
+                        "source": item
+                    })
                             
-                            if item.get("light_pulse") and self.light_animation_controller:
-                                self.light_animation_controller.flash_leds()
+                    if item.get("light_pulse") and self.light_animation_controller:
+                        self.light_animation_controller.flash_leds()
 
-                        item["last_cycle_seen"] = cycle
 
     def _callback(self, outdata, frames, time_info, status):
         if self.tracker.just_went_up:

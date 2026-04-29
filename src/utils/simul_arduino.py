@@ -51,7 +51,7 @@ class PhotoresistorSimulator:
 
 
 class RealDataSimulator:
-    def __init__(self, filename, sample_interval=0.01, loop=True):
+    def __init__(self, filename, sample_interval=0.015, loop=True):
         """
         filename : path to valeurs_exp.json
         sample_interval : seconds between samples (controls playback speed)
@@ -67,21 +67,19 @@ class RealDataSimulator:
         self.last_time = time.monotonic()
 
     def read(self):
-        """
-        Returns next sample at real-time speed.
-        """
         now = time.monotonic()
 
-        # Only advance if enough time passed
-        if now - self.last_time >= self.sample_interval:
-            self.last_time = now
-            self.index += 1
+        elapsed = now - self.last_time
+        steps = int(elapsed / self.sample_interval)
 
-            if self.index >= len(self.data):
-                if self.loop:
-                    self.index = 0
-                else:
-                    self.index = len(self.data) - 1
+        if steps > 0:
+            self.last_time += steps * self.sample_interval
+            self.index += steps
 
+            if self.loop:
+                self.index %= len(self.data)
+            else:
+                self.index = min(self.index, len(self.data) - 1)
+
+        time.sleep(self.sample_interval)
         return self.data[self.index]
-    

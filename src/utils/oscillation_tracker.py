@@ -4,7 +4,7 @@ import threading
 import time
 from collections import deque
 from statistics import mean
-
+from .simul_arduino import RealDataSimulator
 
 class OscillationTracker:
     def __init__(
@@ -15,15 +15,20 @@ class OscillationTracker:
         count_required=5,
         smooth_size=30,
         buffer_size=2000,
-        period_target=3
+        period_target=3,
+        arduino_mode=True
     ):
         # -------------------------
         # Serial
         # -------------------------
-        self.port = port
-        self.baudrate = baudrate
-        self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
-
+        self.arduino_mode = arduino_mode
+        
+        if arduino_mode:
+            self.port = port
+            self.baudrate = baudrate
+            self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+        else : 
+            self.ser = RealDataSimulator("experimental_data/valeurs_simul.json")
         # -------------------------
         # Detection settings
         # -------------------------
@@ -165,12 +170,17 @@ class OscillationTracker:
     def _loop(self):
         while self.running:
             try:
-                line = self.ser.readline().decode("utf-8").strip()
+                
+                if self.arduino_mode:
+                    line = self.ser.readline().decode("utf-8").strip()
 
-                if not line:
-                    continue
+                    if not line:
+                        continue
 
-                value = int(line)
+                    value = int(line)
+                else :
+                    value = int(self.ser.read())
+                    
                 
                 if not self.clock_initialized:
                     if value < self.min_value:
@@ -213,7 +223,7 @@ class OscillationTracker:
         if self.thread:
             self.thread.join(timeout=1)
 
-        if self.ser:
+        if self.ser and self.arduino_mode:
             self.ser.close()
 
     # -------------------------
