@@ -30,7 +30,7 @@ class OscillationTracker:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
         else : 
             #self.ser = RealDataSimulator("experimental_data/valeurs_simul.json")
-            self.ser = JSONLTimeReader("experimental_data/experiment_8.jsonl")
+            self.ser = JSONLTimeReader("experimental_data/value_exp_2.jsonl")
         # -------------------------
         # Detection settings
         # -------------------------
