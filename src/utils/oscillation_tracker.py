@@ -35,11 +35,7 @@ class OscillationTracker:
         # Detection settings
         # -------------------------
         self.threshold = threshold 
-        self.threshold_calibrated = False
-
-
-        self.calibration_buffer = []  # unlimited, only used during calibration
-        
+        self.threshold_calibrated = False        
         
         self.count_required = count_required
         self.period_target = period_target
@@ -64,7 +60,8 @@ class OscillationTracker:
         self.max_value = float("-inf")
         self.p = 0.0
 
-        self.just_went_up = False
+        self.cycle_event = False # for audio-engine
+        self.just_went_up = False # for clock
         self.just_went_down = False
 
         self.state = None
@@ -92,6 +89,8 @@ class OscillationTracker:
         self.data_buffer = deque(maxlen=buffer_size)
         self.smooth_buffer = deque(maxlen=smooth_size)
         self.time_buffer = deque(maxlen=buffer_size)
+        self.calibration_buffer = []  # unlimited, only used during calibration
+
 
         # -------------------------
         # Thread control
@@ -131,25 +130,30 @@ class OscillationTracker:
     # Transition logic
     # -------------------------
     def _process_value(self, value):
-        #self.just_went_up = False // audio_engine will turn it false when it has processed the transition
         #self.just_went_down = False
 
-        
+
         count_down = sum(1 for d in self.derivative_buffer if d < -self.deriv_threshold)
 
         if count_down >= self.deriv_count_required:
             now = time.time()
 
             if self.last_cycle_time is None or (now - self.last_cycle_time) > self.min_cycle_gap:
-                self.just_went_up = True #actually it's not true but it's for audio engine
+                self.cycle_event = True # audio_engine will turn it false when it has processed the transition
                 self.cycle_count += 1
                 self.last_cycle_time = now
                 print(f"New cycle detected (passed with {count_down}) — cycle {self.cycle_count}")
 
-                # clock logic (unchanged)
+                if self.cycle_count == 2 and not self.threshold_calibrated : 
+                    self.threshold = (self.min_value + self.max_value) / 2
+                    self.threshold_calibrated = True
+                    print(f"Threshold auto-set: {self.threshold:.1f}  (min={self.min_value}, max={self.max_value})")
+                    
+                # clock logic (unchanged) --> should work with treshold not derivative so moving it than
                 self.up_transition_times.append(now)
 
                 if len(self.up_transition_times) >= 2:
+                    # when this condition becomes true : analyse the beginning tho get the first transition
                     new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
 
                     if not self.clock_initialized:
@@ -161,6 +165,7 @@ class OscillationTracker:
                     else:
                         self.chemical_clock_time += self.chemical_clock_period
                         self.phase_error = now - self.chemical_clock_time
+                        print(self.chemical_clock_time, self.phase_error, self.chemical_clock_period)
         """ 
         if value > self.threshold:
             self.above_count += 1
@@ -240,9 +245,10 @@ class OscillationTracker:
                     value = int(line)
                 else :
                     value = int(self.ser.read())
-                    
-                
+                                
                 if not self.clock_initialized:
+                    self.calibration_buffer.append(value)    
+
                     if value < self.min_value:
                         self.min_value = value
 
@@ -250,12 +256,14 @@ class OscillationTracker:
                         self.max_value = value
 
                 self.raw_value = value
+                now = time.time() - self.t0
+                self.time_buffer.append(now)
+                
                 smoothed = self._smooth(value)
 
-                now = time.time() - self.t0
-                
+
+
                 self.data_buffer.append(smoothed)
-                self.time_buffer.append(now)
 
 
                 self._process_value(value)

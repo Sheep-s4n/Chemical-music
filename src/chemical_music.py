@@ -13,10 +13,23 @@ clock = ClockDisplay(tracker)
 
 
 tracker.start()
-audio.start()
 plotter.start()
 
+
+system_started = False
+audio_started = False
+last_led_update = 0
+
+
 while True:
+    
+    if system_started:
+    # start audio ONLY when tracker is ready
+
+        if tracker.clock_initialized and not audio_started:
+            print("finished init, starting audio")
+            audio.start()
+            audio_started = True
     clock.update()
     time.sleep(0.01)
 # clock_initialized --> 

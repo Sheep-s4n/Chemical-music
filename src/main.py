@@ -42,7 +42,7 @@ last_led_update = 0
 # -------------------------
 
 while True:
-
+    time.sleep(0.01) # to avoid busy waiting and reduce CPU usage
     vc.update()
 
     if vc.heard_trigger():

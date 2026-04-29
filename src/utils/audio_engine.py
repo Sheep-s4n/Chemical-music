@@ -89,7 +89,7 @@ class AudioEngine:
         return 0.55 - norm * 0.1
 
     def _trigger_cycle_sounds(self):
-        cycle = self.tracker.cycle_count
+        cycle = self.tracker.cycle_count - self.init_cycle
         for item in self.content_list:
             mode = item["mode"]
             start_cycle = item["start_cycle"]
@@ -165,9 +165,9 @@ class AudioEngine:
 
 
     def _callback(self, outdata, frames, time_info, status):
-        if self.tracker.just_went_up:
+        if self.tracker.cycle_event:
             self._trigger_cycle_sounds()
-            self.tracker.just_went_up = False
+            self.tracker.cycle_event = False
 
         mix = np.zeros(frames, dtype=np.float32)
 
@@ -224,7 +224,8 @@ class AudioEngine:
             blocksize=1024
         )
         self.stream.start()
-
+        self.init_cycle = self.tracker.cycle_count
+        
     def stop(self):
         if self.stream:
             self.stream.stop()

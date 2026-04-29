@@ -82,19 +82,38 @@ MUSIC_FILE_RELATIVE_PATH = "music_files/progressive.chm"
 from utils.oscillation_tracker import OscillationTracker
 from utils.audio_engine import AudioEngine
 from utils.plot_monitor import PlotMonitor
+from utils.clock_display import ClockDisplay
+
 import time 
 
 tracker = OscillationTracker(arduino_mode=False)
 audio = AudioEngine(tracker, MUSIC_FILE_RELATIVE_PATH)
 plotter = PlotMonitor(tracker)
+clock = clock = ClockDisplay(tracker)
+
 
 tracker.start()
 plotter.start()
-audio.start()
+
+audio_started = False
+system_started = False
+
+print("System activated") 
+time.sleep(2)
+system_started = True
 
 while True :
     #print(tracker.derivative)
-    time.sleep(0.2)
+    time.sleep(0.01)
+    if system_started:
+        clock.update()
+
+    # start audio ONLY when tracker is ready
+        if tracker.clock_initialized and not audio_started:
+            print("clock initialized, starting audio")
+            audio.start()
+            audio_started = True
+
 
 
 # transition to blue : 
