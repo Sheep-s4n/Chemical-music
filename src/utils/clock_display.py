@@ -14,13 +14,16 @@ class ClockDisplay:
         if self.ui is None : 
             self.ui = ChemicalClockUI()
 
-        if self.x_min == DEFAULT_ASSUMED_MIN and self.x_max == DEFAULT_ASSUMED_MAX: # only assigns once the new max and new min
+
+        if not self.tracker.threshold_calibrated :
             if (
                 self.tracker.min_value != float("inf")
                 and self.tracker.max_value != float("-inf")
             ):
-                self.x_min = self.tracker.min_value
-                self.x_max = self.tracker.max_value
+                self.x_min, self.x_max = self.tracker.min_value, self.tracker.max_value
+        else : 
+            if self.x_min == DEFAULT_ASSUMED_MAX and self.x_max == DEFAULT_ASSUMED_MAX :
+                self.x_min, self.x_max = self.tracker.min_value, self.tracker.max_value            
 
         
         self.ui.handle_events()

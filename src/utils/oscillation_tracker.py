@@ -61,16 +61,12 @@ class OscillationTracker:
         self.p = 0.0
 
         self.cycle_event = False # for audio-engine
-        self.just_went_up = False # for clock
-        self.just_went_down = False
 
         self.state = None
         self.above_count = 0
         self.below_count = 0
 
-        # cycle = UP -> DOWN -> next UP
         self.cycle_count = 0
-        self.waiting_for_next_up = False
 
         # -------------------------
         # Clock data
@@ -126,12 +122,29 @@ class OscillationTracker:
         
         return self.smoothed_value
 
+    def _find_calibration_transitions(self):
+        """Scan calibration buffer to find all UP transitions after threshold is known."""
+        consecutive = 0
+        in_high = False
+        found_times = []
+
+        for value, t in self.calibration_buffer:
+            if value > self.threshold:
+                consecutive += 1
+            else:
+                consecutive = 0
+                in_high = False
+
+            if consecutive >= self.count_required and not in_high:
+                in_high = True
+                found_times.append(self.t0 + t)
+                print(f"Calibration UP transition found at t={t:.2f}s")
+
+        return found_times
     # -------------------------
     # Transition logic
     # -------------------------
     def _process_value(self, value):
-        #self.just_went_down = False
-
 
         count_down = sum(1 for d in self.derivative_buffer if d < -self.deriv_threshold)
 
@@ -148,74 +161,56 @@ class OscillationTracker:
                     self.threshold = (self.min_value + self.max_value) / 2
                     self.threshold_calibrated = True
                     print(f"Threshold auto-set: {self.threshold:.1f}  (min={self.min_value}, max={self.max_value})")
-                    
-                # clock logic (unchanged) --> should work with treshold not derivative so moving it than
+                
+                    past_transitions = self._find_calibration_transitions()
+                    if past_transitions:
+                        self.up_transition_times = past_transitions + self.up_transition_times
+
+                        # build periods from all recovered transitions at once
+                        for i in range(1, len(self.up_transition_times)):
+                            self.periods.append(self.up_transition_times[i] - self.up_transition_times[i - 1])
+
+                        print(f"Recovered {len(past_transitions)} transitions → {len(self.periods)} periods from calibration buffer")
+                                    
+        # clock logic based on threshold
+        if self.threshold_calibrated :
+            if value > self.threshold:
+                self.above_count += 1
+                self.below_count = 0
+
+            elif value < self.threshold:
+                self.below_count += 1
+                self.above_count = 0
+
+            else:
+                self.above_count = 0
+                self.below_count = 0
+            # -------------------------
+            # UP transition
+            # -------------------------
+            if self.above_count >= self.count_required and self.state != "high":
+                self.state = "high"
+                self.above_count = 0
+
+                now = time.time()
                 self.up_transition_times.append(now)
-
-                if len(self.up_transition_times) >= 2:
-                    # when this condition becomes true : analyse the beginning tho get the first transition
+                
+                # clock period calculation
+                if len(self.up_transition_times) >=  2: # to ensure we have a full period
                     new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
-
+                    
                     if not self.clock_initialized:
                         self.periods.append(new_period)
-                        if len(self.periods) >= self.period_target:
+                        if len (self.periods) >= 2:
                             self.chemical_clock_period = mean(self.periods)
+                        if len(self.periods) >= self.period_target: 
                             self.chemical_clock_time = now
                             self.clock_initialized = True
+                            self.calibration_buffer = [] # free memory
+                            print("init clock")
                     else:
                         self.chemical_clock_time += self.chemical_clock_period
                         self.phase_error = now - self.chemical_clock_time
-                        print(self.chemical_clock_time, self.phase_error, self.chemical_clock_period)
-        """ 
-        if value > self.threshold:
-            self.above_count += 1
-            self.below_count = 0
-
-        elif value < self.threshold:
-            self.below_count += 1
-            self.above_count = 0
-
-        else:
-            self.above_count = 0
-            self.below_count = 0
-        # -------------------------
-        # UP transition
-        # -------------------------
-        if self.above_count >= self.count_required and self.state != "high":
-            self.state = "high"
-            self.above_count = 0
-            self.just_went_up = True
-
-            now = time.time()
-            self.up_transition_times.append(now)
-            print(f"Transition UP detected at value {value} (cycle {self.cycle_count + 1})")
-
-            # cycle restart
-            if self.waiting_for_next_up:
-                self.cycle_count += 1
-                self.waiting_for_next_up = False
-
-            
-            # clock period calculation
-            if len(self.up_transition_times) >=  2: # to ensure we have a full period
-                new_period = self.up_transition_times[-1] - self.up_transition_times[-2]
-
-                if not self.threshold_calibrated : 
-                    self.threshold = (self.min_value + self.max_value) / 2
-                    self.threshold_calibrated = True
-                    print(f"Threshold auto-set: {self.threshold:.1f}  (min={self.min_value}, max={self.max_value})")
-                
-                if not self.clock_initialized:
-                    self.periods.append(new_period)
-
-                    if len(self.periods) >= self.period_target:
-                        self.chemical_clock_period = mean(self.periods)
-                        self.chemical_clock_time = now
-                        self.clock_initialized = True
-
-                else:
-                    self.chemical_clock_time += self.chemical_clock_period
-                    self.phase_error = now - self.chemical_clock_time
 
         # -------------------------
         # DOWN transition
@@ -223,11 +218,8 @@ class OscillationTracker:
         if self.below_count >= self.count_required and self.state != "low":
             self.state = "low"
             self.below_count = 0
-            self.just_went_down = True
 
-            # half cycle completed
-            self.waiting_for_next_up = True
-        """
+
 
     # -------------------------
     # Main loop
@@ -245,9 +237,7 @@ class OscillationTracker:
                     value = int(line)
                 else :
                     value = int(self.ser.read())
-                                
-                if not self.clock_initialized:
-                    self.calibration_buffer.append(value)    
+   
 
                     if value < self.min_value:
                         self.min_value = value
@@ -257,7 +247,10 @@ class OscillationTracker:
 
                 self.raw_value = value
                 now = time.time() - self.t0
+                
                 self.time_buffer.append(now)
+                if not self.clock_initialized:
+                    self.calibration_buffer.append((value, now))
                 
                 smoothed = self._smooth(value)
 
