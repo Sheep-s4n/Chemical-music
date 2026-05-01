@@ -61,8 +61,7 @@ pour la musique réactionnel et le pulse, on analyse la dérive pour voir son si
 
 """
 
-
-MUSIC_FILE_RELATIVE_PATH = "music_files/progressive.chm" 
+MUSIC_FILE_RELATIVE_PATH = "music_files/pulse.chm" 
 # put your music file here, relative to the src folder
 # than open a command line interface and run the command : python chm_player.py
 # keep in mind that each reaction is different so the music might be faster or slower
@@ -83,41 +82,17 @@ from utils.oscillation_tracker import OscillationTracker
 from utils.audio_engine import AudioEngine
 from utils.plot_monitor import PlotMonitor
 from utils.clock_display import ClockDisplay
-
 import time 
 
 tracker = OscillationTracker(arduino_mode=False)
 audio = AudioEngine(tracker, MUSIC_FILE_RELATIVE_PATH)
 plotter = PlotMonitor(tracker)
-clock = clock = ClockDisplay(tracker)
-
+clock = ClockDisplay(tracker)
 
 tracker.start()
 plotter.start()
-
-audio_started = False
-system_started = False
-
-print("System activated") 
-time.sleep(2)
-system_started = True
+audio.start()
 
 while True :
-    #print(tracker.derivative)
+    clock.update()
     time.sleep(0.01)
-    if system_started:
-        clock.update()
-
-    # start audio ONLY when tracker is ready
-        if tracker.clock_initialized and not audio_started:
-            print("clock initialized, starting audio")
-            audio.start()
-            audio_started = True
-
-
-
-# transition to blue : 
-#    if (tracker.derivative < -400):
-#        print("BLUE")
-# check there is no like too litlle time between two blue 
-# if we moved to the blue phase according to treshold but it hasn't been seen with the derivative : consider we are in blue phase

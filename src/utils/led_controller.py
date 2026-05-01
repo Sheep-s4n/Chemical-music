@@ -8,6 +8,8 @@ TYPE_BRIGGS_RAUSCHER = 1
 TYPE_FLASH_LEDS = 2
 TYPE_FADE_OUT = 3
 TYPE_BREATHING = 4
+TYPE_LED_SECTION = 5
+MAX_SEGMENTS = 10 # avoiding buffer overflow (41 bytes max in 64 byte buffer)
 
 class LEDController:
     def __init__(self, port, baudrate=115200):
@@ -53,6 +55,36 @@ class LEDController:
             (duration_ms >> 8) & 0xFF,
             duration_ms & 0xFF
         ])
+        
+    def led_sections(self, segments):
+        """
+        segments: list of (start, end)
+        Example: [(0, 10), (45, 70), (120, 150)]
+        """
+
+        if len(segments) == 0:
+            raise ValueError("At least one segment is required")
+
+        if len(segments) > MAX_SEGMENTS:
+            raise ValueError(f"Too many segments (max {MAX_SEGMENTS} with 64-byte payload)")
+
+        payload = [len(segments)] # first byte is the number of segments
+
+        for start, end in segments:
+            if not (0 <= start < 300 and 0 <= end < 300):
+                raise ValueError("LED indices must be between 0 and 299")
+
+            if start > end:
+                raise ValueError("start must be <= end")
+
+            payload.extend([
+                (start >> 8) & 0xFF,
+                start & 0xFF,
+                (end >> 8) & 0xFF,
+                end & 0xFF
+            ])
+
+        self._send_packet(TYPE_LED_SECTION, payload)
 
     def close(self):
         self.serial.close()

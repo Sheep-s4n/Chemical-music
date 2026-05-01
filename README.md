@@ -9,7 +9,23 @@ _The first test of Chemical Music (sound removed for copyright reasons) shows th
 
 This project explores the intersection of chemistry and art through an immersive experience. The **Briggs-Rauscher reaction** was chosen for its striking color changes, which can be monitored using a photoresistor.  
 
-The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. This data reflects the current color of the reaction and is processed in Python to generate music while simultaneously controlling LED colors that adapt in real time to the reaction. Additionally, a chemical clock is implemented based on the periodic color transitions, and voice commands can be used to interact with the lighting system during the experience.
+The basic workflow is as follows: the microcontroller collects data from the photoresistor and sends it to the computer. The system uses this data to modulate pre-existing audio layers defined in chemical music files, while simultaneously controlling LED colors that adapt dynamically to the reaction. Additionally, a chemical clock is implemented by detecting periodic color transitions, and voice commands can be used to interact with the lighting system during the experience.
+
+_Here is a short demonstration of the interface behavior:_
+
+https://github.com/user-attachments/assets/1c0856eb-a81d-4f65-a588-5023de6b18d6
+
+_Demonstration of the chemical music and clock system using the Briggs–Rauscher [simulator](#simulator-testing-chemical-music) (built with experimental data)._
+
+**Note:** The video player starts with audio muted by default — please enable sound manually.  
+
+### Comment
+- The interface is split into two parts: on the left, the clock interface; on the right, the visualization of data from the Briggs–Rauscher reaction.  
+- The first three periods are used to analyse the curve for clock calibration.  
+- The chemical music configuration used is `pulse.chm`.
+- The music dynamically follows the reaction curve: when it rises, the sound becomes louder and brighter; when it falls, both decrease.  
+- A distinct “hit” marks the beginning of each new cycle.
+- The user interface is in French.  
 
 ---
 
@@ -145,7 +161,7 @@ _Photoresistor wiring diagram_
 
 2. **LED Strip:** WS2811 addressable LED strip; each controller IC governs a segment of three LEDs. The emitted light is synchronized with the chemical reaction colors.
 
-3. **Power Injection Cables:** additional Direct Current (DC) supply lines distributed along the strip to compensate for voltage drop over distance. See the next section for further details.
+3. **Power Injection Cables:** additional Direct Current (DC) supply lines distributed along the strip to compensate for voltage drop over distance. See the [next section](#power-injection-strategy) for further details.
 
 4. **LED data wire:** This green wire carries data from the microcontroller to the LED strip, controlling the color and brightness of each segment.
 

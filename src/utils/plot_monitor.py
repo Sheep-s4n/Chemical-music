@@ -12,6 +12,12 @@ class PlotMonitor:
         plt.ion()
         fig, ax = plt.subplots()
         
+        manager = plt.get_current_fig_manager()
+        try:
+            manager.window.wm_geometry("+1000+0")  # X + Y offset (pixels)
+        except:
+            pass
+        
         ax.set_xlabel("Temps (s)")
         ax.set_ylabel("Intensité lumineuse (u.a.)")
     

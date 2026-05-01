@@ -9,7 +9,8 @@ class VoiceLEDController:
 
         self.sample_rate = sample_rate
 
-        self.q = queue.Queue()
+        self.q = queue.Queue(maxsize=3)
+
         self.model = Model(model_path)
         self.rec = KaldiRecognizer(self.model, sample_rate)
 
@@ -61,7 +62,10 @@ class VoiceLEDController:
     # AUDIO CALLBACK
     # -------------------------
     def _callback(self, indata, frames, time, status):
-        self.q.put(bytes(indata))
+        try:
+            self.q.put_nowait(bytes(indata))
+        except queue.Full:
+            pass  # silently drop if not consumed yet
 
     # -------------------------
     # INTERNAL PARSER
@@ -123,12 +127,8 @@ class VoiceLEDController:
         data = None
 
         try:
-            while True:
-                data = self.q.get_nowait()
+            data = self.q.get_nowait()
         except queue.Empty:
-            pass
-
-        if data is None:
             return
 
         # always feed audio
@@ -142,7 +142,7 @@ class VoiceLEDController:
             self._parse(partial_text)
 
         
-            # ---- FINAL (stable) ----
+        # ---- FINAL (stable) ----
         if is_final:
             final_result = json.loads(self.rec.Result())
             final_text = final_result.get("text", "")

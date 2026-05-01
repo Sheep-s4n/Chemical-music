@@ -47,7 +47,8 @@ class OscillationTracker:
         self.min_cycle_gap = 3.0  # seconds — tune to be safely below your period
         
         self.derivative_buffer = deque(maxlen=40)
-        self.deriv_threshold = 400
+        self.blue_deriv_threshold = - 400
+        self.white_deriv_threshold = 100
         self.deriv_count_required = 25
 
         # -------------------------
@@ -67,6 +68,8 @@ class OscillationTracker:
         self.below_count = 0
 
         self.cycle_count = 0
+        
+        self.is_blue_phase = False # if not blue it's white-yellow
 
         # -------------------------
         # Clock data
@@ -111,13 +114,17 @@ class OscillationTracker:
         
         span = abs(self.max_value - self.min_value)
 
-        # calculating p (it's just a normalized position of the smoothed value between min and max, clamped between 0 and 1) : 
-        if self.clock_initialized and span != 0 :
-            self.p = (self.smoothed_value - self.min_value) / span
-            self.p = max(0.0, min(1.0, self.p))  # clamp p to [0,1] if the signal goes outside the calibrated range
+        # calculating p :
+        if self.clock_initialized and span != 0:
+            raw_p = (self.smoothed_value - self.min_value) / span
+            raw_p = max(0.0, min(1.0, raw_p))
+
+            if self.is_blue_phase:
+                self.p = 0.75  # constant, clearly above 0.5 threshold
+            else:
+                self.p = raw_p * 0.5  # squish into [0, 0.5] for white-yellow range
         else:
             self.p = 0.0
-
 
         
         return self.smoothed_value
@@ -146,10 +153,11 @@ class OscillationTracker:
     # -------------------------
     def _process_value(self, value):
 
-        count_down = sum(1 for d in self.derivative_buffer if d < -self.deriv_threshold)
+        count_down = sum(1 for d in self.derivative_buffer if d < self.blue_deriv_threshold) # for blue transition
 
         if count_down >= self.deriv_count_required:
             now = time.time()
+            self.is_blue_phase = True
 
             if self.last_cycle_time is None or (now - self.last_cycle_time) > self.min_cycle_gap:
                 self.cycle_event = True # audio_engine will turn it false when it has processed the transition
@@ -171,7 +179,11 @@ class OscillationTracker:
                             self.periods.append(self.up_transition_times[i] - self.up_transition_times[i - 1])
 
                         print(f"Recovered {len(past_transitions)} transitions → {len(self.periods)} periods from calibration buffer")
-                                    
+        
+        # yellow-white phase : 
+        if self.derivative > self.white_deriv_threshold:
+            self.is_blue_phase = False
+                           
         # clock logic based on threshold
         if self.threshold_calibrated :
             if value > self.threshold:

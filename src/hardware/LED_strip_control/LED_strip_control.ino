@@ -9,27 +9,23 @@ CRGB leds[NUM_LEDS];
 uint8_t type;
 uint8_t len;
 uint8_t idx; // This is a counter used while reading payload bytes.
-uint8_t payload[10]; // Temporary storage for parameters.
+uint8_t payload[64]; 
 
 int state = 0; // It defines which part of the message we are currently reading.
 
 
 void briggsRauscher(float p) {
 
-    const float THRESHOLD = 0.6;
+    const float THRESHOLD = 0.5;
 
     static bool wasBlue = false;
-    static float prevP = 0;
 
     bool isBlue  = (p >= THRESHOLD);
-
-    uint8_t oldSat = (uint8_t)(prevP * (255.0 / THRESHOLD));
-    uint8_t newSat = (uint8_t)(p     * (255.0 / THRESHOLD));
 
     // ------------------------------------
     // fixing brightness at 175
     // ------------------------------------
-    uint8_t current = FastLED.getBrightness();
+    /*uint8_t current = FastLED.getBrightness();
 
       while (current != 175) {
           current += (current < 175) ? 1 : -1;
@@ -38,12 +34,15 @@ void briggsRauscher(float p) {
           FastLED.show();
 
           delay(5);
-      }
+      }*/
+
+    FastLED.setBrightness(175);
+
 
     // ------------------------------------
     // yellow family animation
     // ------------------------------------
-    if (!wasBlue && !isBlue) {
+    /*if (!wasBlue && !isBlue) {
 
 
         int step = (newSat > oldSat) ? 1: -1;
@@ -55,7 +54,20 @@ void briggsRauscher(float p) {
 
         fill_solid(leds, NUM_LEDS, CHSV(56, newSat, 175));
         FastLED.show();
+    }*/
+    // ------------------------------------
+    // white-yellow blend
+    // ------------------------------------
+    if (!wasBlue && !isBlue) {
+        float t = p / THRESHOLD;             // 0.0 = white, 1.0 = yellow
+        float t_biased = pow(t, 0.6);        // at midpoint: 0.5^0.6 ≈ 0.66 → ~65% toward yellow
+
+        uint8_t sat = (uint8_t)(255 * t_biased);           // 0 at white, 255 at yellow
+
+        fill_solid(leds, NUM_LEDS, CHSV(56, sat, 175));
+        FastLED.show();
     }
+
 
     // ------------------------------------
     // yellow -> blue transition
@@ -78,9 +90,8 @@ void briggsRauscher(float p) {
     // stable blue
     // ------------------------------------
     else if (wasBlue && isBlue) {
-
-        // solid blue : 今分かりません、まだ考えています。 :D
-
+        fill_solid(leds, NUM_LEDS, CHSV(165, 255, 175));
+        FastLED.show();
     }
 
     // ------------------------------------
@@ -95,7 +106,6 @@ void briggsRauscher(float p) {
         }
     }
 
-    prevP = p;
     wasBlue = isBlue;
 
 }
@@ -154,6 +164,29 @@ void fadeOutFromCurrent(int frameDelay = 10) {
 
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
+}
+
+void ledSection(uint8_t* data, uint8_t len) {
+    uint8_t numSegments = data[0];
+
+    FastLED.setBrightness(255);
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+
+    for (uint8_t s = 0; s < numSegments; s++) {
+        uint8_t base = 1 + s * 4;
+
+        uint16_t start = ((uint16_t)data[base]     << 8) | data[base + 1];
+        uint16_t end   = ((uint16_t)data[base + 2] << 8) | data[base + 3];
+
+        start = min(start, (uint16_t)(NUM_LEDS - 1));
+        end   = min(end,   (uint16_t)(NUM_LEDS - 1));
+
+        if (start <= end) {
+            fill_solid(leds + start, end - start + 1, CRGB::White);
+        }
+    }
+
+    FastLED.show();
 }
 
 void flashLEDs() {
@@ -246,6 +279,10 @@ void execute(uint8_t type, uint8_t* data, uint8_t len) {
             (uint32_t)data[2];
 
         breathingAnimation(durationMs);
+    }
+
+    else if (type == 5) {
+      ledSection(data, len);
     }
     // switch statment broke the code for whatever reason ... 
 }

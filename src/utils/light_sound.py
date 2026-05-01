@@ -140,6 +140,10 @@ class LightSoundController:
     def flash_leds(self):
         self.leds.flash_leds()
     
+    def led_sections(self, segments):
+        self._play("ai_obey", pause_after=0.5)
+        self.leds.led_sections(segments)
+    
     def start_loading_animation(self):
         # save current state
         self._saved_music_file = self.music_file

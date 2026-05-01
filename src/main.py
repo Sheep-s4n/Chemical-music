@@ -35,7 +35,12 @@ controller.start_music()
 
 system_started = False
 audio_started = False
-last_led_update = 0
+
+# ------------------------
+# LIST OF LED SECTIONS 
+# -----------------------
+
+LED_SECTIONS = [ [(0,100)] , [(0,140)], [(0,180)]]
 
 # -------------------------
 # MAIN LOOP (ALWAYS RUNNING)
@@ -91,12 +96,7 @@ while True:
             audio_started = True
 
 
-        # run every 0.25 second (4 fps) without blocking the thread :
-        current_time = time.time()
-
-        if current_time - last_led_update >= 0.25:
-            controller.briggs_rauscher(tracker.p)
-            last_led_update = current_time
+        controller.briggs_rauscher(tracker.p)
         
 
 
