@@ -41,6 +41,7 @@ audio_started = False
 # -----------------------
 
 LED_SECTIONS = [ [(0,100)] , [(0,140)], [(0,180)]]
+current_sections_index = 0
 
 # -------------------------
 # MAIN LOOP (ALWAYS RUNNING)
@@ -80,6 +81,12 @@ while True:
             controller.self_introduction()
             vc.command_locked = True
             vc.latest_command = None
+        elif cmd == "LED_SECTION":
+            controller.led_sections(LED_SECTIONS[current_sections_index])
+            current_sections_index = (current_sections_index + 1) % len(LED_SECTIONS)
+            vc.command_locked = True
+            vc.latest_command = None
+
 
 
     # -------------------------

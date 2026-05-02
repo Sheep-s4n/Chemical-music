@@ -35,4 +35,8 @@ while True:
             print("start loading command detected")
             vc.command_locked = True
             vc.latest_command = None
+        if cmd == "LED_SECTION":
+            print("prochaine section")
+            vc.command_locked = True
+            vc.latest_command = None
 

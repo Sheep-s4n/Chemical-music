@@ -29,6 +29,12 @@ class VoiceLEDController:
         self.LIGHT_OFF = {
             "éteindre", "éteins", "éteint", "coupe", "désactive", "arrête", "fermer", "couper"
         }
+        
+        # Words that identify the target as a LED section/zone
+        self.SECTION_CONTEXT = {
+            "section", "sections", "zone", "zones",
+            "partie", "parties", "segment", "segments"        
+        }
 
         self.LIGHT_CONTEXT = {
             "lumière", "lumières", "l'éclairage", "éclairages",
@@ -81,11 +87,18 @@ class VoiceLEDController:
         else:
             self.trigger_detected = False
 
+
+        
+        # LED_SECTION takes priority over LIGHT_ON
+        if any(w in self.SECTION_CONTEXT for w in words) and any(w in self.LIGHT_ON for w in words):
+            self.latest_command = "LED_SECTION"
+            return
+
         # 1. check if sentence is about light
         is_light_related = any(
             w in self.LIGHT_CONTEXT for w in words
         )
-
+        
         if  is_light_related:
 
             # 2. detect ON intent
