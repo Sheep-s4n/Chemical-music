@@ -1,6 +1,7 @@
 assets/music/progressive/*
 assets/music/ambient/*
 assets/music/04_Gm_120_BPM/*
+assets/sfx/AI_voice/anto_ack.mp3
 !assets/music/ambient/MANTRON.mp3
 !assets/music/ambient/sci-fi_ambient.mp3
 src/experimental_data/experiment_*.jsonl

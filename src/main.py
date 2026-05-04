@@ -64,7 +64,7 @@ while True:
             plotter.start()
 
             system_started = True
-            #controller.start_loading_animation() # blocks the thread --> to fix
+            controller.start_loading_animation() # shouldn't block the thread anymore
             print("System activated") 
 
         # -------------------------
@@ -74,6 +74,7 @@ while True:
             controller.light_up()
             vc.command_locked = True
             vc.latest_command = None
+        
         elif cmd == "LIGHT_OFF":
             controller.fade_out()
             vc.command_locked = True
@@ -90,7 +91,20 @@ while True:
             vc.command_locked = True
             vc.latest_command = None
 
-
+        elif cmd == "STOP" and system_started:
+            tracker.stop()
+            audio.stop()
+            plotter.stop()
+            system_started = False
+            audio_started = False
+            vc.command_locked = True
+            vc.latest_command = None
+            print("System stopped")
+        
+        elif cmd == "ACKNOWLEDGEMENT" : 
+            controller.acknowledgment()
+            vc.command_locked = True
+            vc.latest_command = None
 
     # -------------------------
     # ONLY RUN CLOCK IF SYSTEM IS ACTIVE

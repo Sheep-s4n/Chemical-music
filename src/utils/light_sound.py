@@ -22,6 +22,7 @@ class LightSoundController:
         "ai_presentation" : "../assets/sfx/AI_voice/AI_presentation.wav",
         "ai_start_loading" : "../assets/sfx/AI_voice/AI_start_loading.mp3",
         "ai_end_loading" : "../assets/sfx/AI_voice/AI_end_loading.mp3",
+        "anto_ack" : "assets/sfx/AI_voice/anto_ack.mp3"
     }
     
 
@@ -154,7 +155,7 @@ class LightSoundController:
         # play voice animation:
         self._play("ai_obey", pause_after=0.5)
         self.leds.breathing(16000)
-        self._play("ai_start_loading")
+        self._play("ai_start_loading", blocking=False)
         
         # switch to loading music
         self.stop_music()
@@ -162,9 +163,6 @@ class LightSoundController:
         self.music_file = "../assets/music/epic/epic_music.mp3"
         self.music_volume = 1.0
         self.music_data, self.music_fs = sf.read(self.music_file)
-
-
-        
         
         self.start_music()
 
@@ -173,8 +171,6 @@ class LightSoundController:
         self.leds.breathing(5500)
         self._play("ai_end_loading")
 
-        # play voice animation here
-
         # restore previous state
         self.music_file = self._saved_music_file
         self.music_volume = self._saved_music_volume
@@ -182,7 +178,9 @@ class LightSoundController:
         self.music_fs = self._saved_music_fs
         # usually at this state the audio_engine takes the control of sound so this one is not needed anymore 
         
-        
+    def acknowledgment(self):
+        self.leds.breathing(4500)
+        self._play("anto_ack")
 
     # only for background music
     def _music_loop(self):

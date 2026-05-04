@@ -20,7 +20,7 @@ class VoiceLEDController:
         self.command_locked = False
 
         
-        self.TRIGGERS = {"anthony", "anto", "en tout" , "tony"}
+        self.TRIGGERS = {"anthony", "anto", "en tout" , "tony", "tenue"}
 
         self.LIGHT_ON = {
             "allumer", "allume", "active", "mettre", "démarre", "lance", "ouvre"
@@ -51,6 +51,14 @@ class VoiceLEDController:
         
         self.IDENTITY_WORDS = {
             "qui", "es", "identité"
+        }
+        
+        self.STOP_WORDS = {
+            "stop", "arrête", "arrête-toi", "terminer", "termine", "fini", "fin", "quitter", "quitte"
+        }
+        
+        self.THANKS_WORDS = {
+            "merci"
         }
         
         self.START_WORDS = {
@@ -90,7 +98,9 @@ class VoiceLEDController:
 
         
         # LED_SECTION takes priority over LIGHT_ON
-        if any(w in self.SECTION_CONTEXT for w in words) and any(w in self.LIGHT_ON for w in words):
+        if (any(w in self.SECTION_CONTEXT for w in words) 
+            or (any(w in self.SECTION_CONTEXT for w in words) and any(w in self.LIGHT_ON for w in words))
+        ) :
             self.latest_command = "LED_SECTION"
             return
 
@@ -129,6 +139,16 @@ class VoiceLEDController:
 
             if self.trigger_detected and start_requested and analysis_requested:
                 self.latest_command = "START_LOADING"
+                return
+            
+            stop_requested = any(w in self.STOP_WORDS for w in words)
+            if self.trigger_detected and stop_requested:
+                self.latest_command = "STOP"
+                return
+
+            thanks_requested = any(w in self.THANKS_WORDS for w in words)
+            if self.trigger_detected and thanks_requested:
+                self.latest_command = "ACKNOWLEDGEMENT"
                 return
 
         self.latest_command = None

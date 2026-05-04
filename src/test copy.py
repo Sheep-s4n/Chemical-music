@@ -40,3 +40,13 @@ while True:
             vc.command_locked = True
             vc.latest_command = None
 
+        if cmd == "STOP":
+            vc.command_locked = True
+            vc.latest_command = None
+            print("System stopped")
+        
+        elif cmd == "ACKNOWLEDGEMENT" : 
+            print("acknowledgmeent")
+            vc.command_locked = True
+            vc.latest_command = None
+            
