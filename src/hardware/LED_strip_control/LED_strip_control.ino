@@ -14,17 +14,28 @@ uint8_t payload[64];
 int state = 0; // It defines which part of the message we are currently reading.
 
 
+void flashLEDs() {
+    uint8_t originalBrightness = FastLED.getBrightness();
+
+    FastLED.setBrightness(255);
+    FastLED.show();
+    delay(100);
+
+    FastLED.setBrightness(originalBrightness);
+    FastLED.show();
+}
+
 void briggsRauscher(float p) {
 
     const float THRESHOLD = 0.5;
 
-    static bool wasBlue = false;
-    static float prevP = 0;
+    //static bool wasBlue = false;
+    //static float prevP = 0;
 
-    bool isBlue  = (p >= THRESHOLD);
+    //bool isBlue  = (p > THRESHOLD);
 
-    float prevT       = prevP / THRESHOLD;
-    uint8_t oldSat    = (uint8_t)(255 * pow(prevT, 0.6));  // what's actually on the LEDs
+    //float prevT       = prevP / THRESHOLD;
+    //uint8_t oldSat    = (uint8_t)(255 * pow(prevT, 0.6));  // what's actually on the LEDs
 
     // ------------------------------------
     // fixing brightness at 175
@@ -35,7 +46,7 @@ void briggsRauscher(float p) {
     // ------------------------------------
     // white-yellow blend
     // ------------------------------------
-    if (!wasBlue && !isBlue) {
+    if (p <= THRESHOLD) {
         float t = p / THRESHOLD;             // 0.0 = white, 1.0 = yellow
         float t_biased = pow(t, 0.6);        // at midpoint: 0.5^0.6 ≈ 0.66 → ~65% toward yellow
 
@@ -44,8 +55,15 @@ void briggsRauscher(float p) {
         fill_solid(leds, NUM_LEDS, CHSV(56, sat, 175));
         FastLED.show();
     }
+    // ------------------------------------
+    // stable blue
+    // ------------------------------------
+    else { // 0.75 for blue
+        fill_solid(leds, NUM_LEDS, CHSV(165, 255, 175));
+        FastLED.show();
+    }
 
-
+    /*
     // ------------------------------------
     // yellow -> blue transition
     // ------------------------------------
@@ -67,19 +85,14 @@ void briggsRauscher(float p) {
         FastLED.show();
 
     }
+    */
 
-    // ------------------------------------
-    // stable blue
-    // ------------------------------------
-    else if (wasBlue && isBlue) {
-        fill_solid(leds, NUM_LEDS, CHSV(165, 255, 175));
-        FastLED.show();
-    }
+
 
     // ------------------------------------
     // blue -> yellow transition
     // ------------------------------------
-    else if (wasBlue && !isBlue) {
+    /*else if (wasBlue && !isBlue) {
 
         // transition animation
         for (int i = 255; i >= 0; i -= 26) {
@@ -91,7 +104,7 @@ void briggsRauscher(float p) {
     }
 
     prevP = p;
-    wasBlue = isBlue;
+    wasBlue = isBlue;*/
 
 }
 
@@ -174,16 +187,6 @@ void ledSection(uint8_t* data, uint8_t len) {
     FastLED.show();
 }
 
-void flashLEDs() {
-    uint8_t originalBrightness = FastLED.getBrightness();
-
-    FastLED.setBrightness(255);
-    FastLED.show();
-    delay(100);
-
-    FastLED.setBrightness(originalBrightness);
-    FastLED.show();
-}
 
 void breathingAnimation(uint32_t durationMs) {
 

@@ -164,7 +164,6 @@ class OscillationTracker:
                 self.cycle_count += 1
                 self.last_cycle_time = now
                 print(f"New cycle detected (passed with {count_down}) — cycle {self.cycle_count}")
-
                 if self.cycle_count == 2 and not self.threshold_calibrated : 
                     self.threshold = (self.min_value + self.max_value) / 2
                     self.threshold_calibrated = True
@@ -249,13 +248,11 @@ class OscillationTracker:
                     value = int(line)
                 else :
                     value = int(self.ser.read())
-   
-
-                    if value < self.min_value:
-                        self.min_value = value
-
-                    if value > self.max_value:
-                        self.max_value = value
+                
+                if value < self.min_value:
+                    self.min_value = value
+                if value > self.max_value:
+                    self.max_value = value
 
                 self.raw_value = value
                 now = time.time() - self.t0

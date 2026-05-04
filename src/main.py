@@ -29,23 +29,25 @@ controller.start_music()
 
 
 
-# -------------------------
-# STATE
-# -------------------------
-
-system_started = False
-audio_started = False
-
 # ------------------------
 # LIST OF LED SECTIONS 
 # -----------------------
 
 LED_SECTIONS = [ [(0,100)] , [(0,140)], [(0,180)]]
+
+# -------------------------
+# STATE & VARIABLES
+# -------------------------
+
+system_started = False
+audio_started = False
 current_sections_index = 0
 
 # -------------------------
 # MAIN LOOP (ALWAYS RUNNING)
 # -------------------------
+
+last_briggs_time = 0
 
 while True:
     time.sleep(0.01) # to avoid busy waiting and reduce CPU usage
@@ -62,7 +64,7 @@ while True:
             plotter.start()
 
             system_started = True
-            controller.start_loading_animation() # blocks the thread --> to fix
+            #controller.start_loading_animation() # blocks the thread --> to fix
             print("System activated") 
 
         # -------------------------
@@ -81,6 +83,7 @@ while True:
             controller.self_introduction()
             vc.command_locked = True
             vc.latest_command = None
+        
         elif cmd == "LED_SECTION":
             controller.led_sections(LED_SECTIONS[current_sections_index])
             current_sections_index = (current_sections_index + 1) % len(LED_SECTIONS)
@@ -97,13 +100,16 @@ while True:
         clock.update()
 
         if tracker.clock_initialized and not audio_started:
-            controller.end_loading_animation() # blocks the thread but it's made on purpose
+            #controller.end_loading_animation() # blocks the thread but it's made on purpose
 
             audio.start()
             audio_started = True
 
-
-        controller.briggs_rauscher(tracker.p)
-        
+        if audio_started:
+            now = time.time()
+            if now - last_briggs_time >= 0.1:
+                controller.briggs_rauscher(tracker.p)
+                print(tracker.p)
+                last_briggs_time = now
 
 

@@ -1,0 +1,34 @@
+{
+    "content_list": [
+      {
+        "file": "../assets/music/04_Gm_120_BPM/Full Stems/04_Acoustic Piano.wav",
+        "volume": 0.5,
+        "mode": "sustain",
+        "start_cycle": 1,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/04_Gm_120_BPM/Full Stems/04_Arp.wav",
+        "volume": 0.5,
+        "mode": "sustain",
+        "start_cycle": 1,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/04_Gm_120_BPM/Full Stems/04_Snap.wav",
+        "volume": 0.6,
+        "mode": "sustain",
+        "start_cycle": 2,
+        "light_pulse" : true
+      },
+      {
+        "file": "../assets/music/04_Gm_120_BPM/Full Stems/04_Shaker_0.wav",
+        "volume": 1,
+        "mode": "sustain",
+        "start_cycle": 3,
+        "light_pulse" : false
+      }
+
+    ]
+}
+

@@ -1,0 +1,47 @@
+{
+    "content_list": [
+      {
+        "file": "../assets/music/ambient/vinyl-crackle.mp3",
+        "volume": 0.7,
+        "mode": "sustain",
+        "start_cycle": 0,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/Ashita/Loops/Kick/open_kick.mp3",
+        "volume": 0.5,
+        "mode": "sustain",
+        "start_cycle": 1,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/Ashita/Loops/Top/top_open.mp3",
+        "volume": 0.5,
+        "mode": "sustain",
+        "start_cycle": 2,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/Ashita/FX/fxloop_1.wav",
+        "volume": 0.5,
+        "mode": "add_once",
+        "start_cycle": 3,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/Ashita/Loops/nightpulse.wav",
+        "volume": 0.5,
+        "mode": "add_once",
+        "start_cycle": 5,
+        "light_pulse" : false
+      },
+      {
+        "file": "../assets/music/Ashita/Loops/piano.wav",
+        "volume": 0.5,
+        "mode": "add_once",
+        "start_cycle": 6,
+        "light_pulse" : false
+      }
+    ]
+}
+
