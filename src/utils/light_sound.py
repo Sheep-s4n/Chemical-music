@@ -3,6 +3,7 @@ import sounddevice as sd
 import soundfile as sf
 import numpy as np
 import threading
+import random
 
 from .led_controller import LEDController
 
@@ -15,16 +16,33 @@ class LightSoundController:
     AUDIO_FILES = {
         "ai_1": "../assets/sfx/AI_voice/AI_1_v2.mp3",
         "ai_obey": "../assets/sfx/AI_voice/AI_obey.mp3",
+        "ai_obey_2" : "../assets/sfx/AI_voice/AI_obey_2.mp3",
+        "ai_obey_3" : "../assets/sfx/AI_voice/AI_obey_3.mp3",
+        "ai_obey_4" : "../assets/sfx/AI_voice/AI_obey_4.mp3",
+        "ai_obey_5" : "../assets/sfx/AI_voice/AI_obey_5.mp3",
+        "ai_obey_6" : "../assets/sfx/AI_voice/AI_obey_6.mp3",
         "ai_2_fr": "../assets/sfx/AI_voice/AI_2_fr.mp3",
         "ai_3_fr": "../assets/sfx/AI_voice/AI_3_fr.mp3",
         "power_on": "../assets/sfx/LED/PowerOn_sfx.wav",
         "power_off": "../assets/sfx/LED/Poweroff_sfx.mp3",
+        "section" : "../assets/sfx/LED/section_2.mp3",
         "ai_presentation" : "../assets/sfx/AI_voice/AI_presentation.wav",
         "ai_start_loading" : "../assets/sfx/AI_voice/AI_start_loading.mp3",
         "ai_end_loading" : "../assets/sfx/AI_voice/AI_end_loading.mp3",
-        "anto_ack" : "assets/sfx/AI_voice/anto_ack.mp3"
+        "anto_ack" : "assets/sfx/AI_voice/anto_ack.mp3",
+        "ai_stop" : "assets/sfx/AI_voice/AI_stop_jp.mp3",
+        "ai_segment" : "assets/sfx/AI_voice/AI_segment.mp3",
     }
     
+    AI_RESPOND_FILES = [
+        "ai_1",
+        "ai_obey",
+        "ai_obey_2",
+        "ai_obey_3",
+        "ai_obey_4",
+        "ai_obey_5",
+        "ai_obey_6",
+    ]
 
 
     # -------------------------
@@ -122,8 +140,8 @@ class LightSoundController:
     # FADE OUT SEQUENCE
     # -------------------------
     def fade_out(self):
-
-        self._play("ai_1", pause_after=0.5)
+        self.ai_respond()
+        #self._play("ai_1", pause_after=0.5)
         self._play("ai_3_fr")
 
         self._play("power_off", blocking=False)
@@ -140,9 +158,18 @@ class LightSoundController:
     
     def flash_leds(self):
         self.leds.flash_leds()
+        
+    def ai_respond(self, pause_after=0.5):
+        name = random.choice(self.AI_RESPOND_FILES)
+        self._play(name, pause_after=pause_after)
     
     def led_sections(self, segments):
-        self._play("ai_obey", pause_after=0.5)
+        self.ai_respond()
+        self._play("ai_segment")
+        
+        # non-blocking LED sound
+        self._play("section", blocking=False)
+        # add a wait here if there is a sync issue between sound and leds
         self.leds.led_sections(segments)
     
     def start_loading_animation(self):
@@ -181,7 +208,11 @@ class LightSoundController:
     def acknowledgment(self):
         self.leds.breathing(4500)
         self._play("anto_ack")
-
+        
+    def stop_chemical_music(self):
+        self.leds.breathing(2200)
+        self._play("ai_stop")
+    
     # only for background music
     def _music_loop(self):
 

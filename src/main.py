@@ -99,6 +99,7 @@ while True:
             audio_started = False
             vc.command_locked = True
             vc.latest_command = None
+            controller.stop_chemical_music()
             print("System stopped")
         
         elif cmd == "ACKNOWLEDGEMENT" : 
